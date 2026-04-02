@@ -107,6 +107,79 @@ function getProducts() {
     return storeProducts;
 }
 
+// --- Image Compression & Multi-Upload Logic ---
+let uploadedImages = [];
+let selectedCoverIndex = 0;
+
+function compressImageWebP(file) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                const maxSize = 800; // aggressively shrink to save Firestore space
+                if (width > height && width > maxSize) {
+                    height *= maxSize / width;
+                    width = maxSize;
+                } else if (height > maxSize) {
+                    width *= maxSize / height;
+                    height = maxSize;
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/webp', 0.6));
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function renderImagePreviews() {
+    const grid = document.getElementById('preview-grid');
+    if(!grid) return;
+    grid.innerHTML = '';
+    
+    uploadedImages.forEach((b64, index) => {
+        const isCover = index === selectedCoverIndex;
+        grid.innerHTML += `
+        <div class="snap-center shrink-0 relative cursor-pointer group" onclick="selectedCoverIndex=${index}; renderImagePreviews();">
+            <img src="${b64}" class="w-24 h-24 object-cover rounded-xl border-4 ${isCover ? 'border-admin shadow-md' : 'border-transparent opacity-70 group-hover:opacity-100'} transition duration-300">
+            ${isCover ? '<div class="absolute -top-2 -right-2 bg-admin text-white text-[10px] font-black px-2 py-1 rounded-full shadow-sm">COVER</div>' : ''}
+        </div>`;
+    });
+}
+
+window.handleImageFilesSelection = function(e) {
+    const files = Array.from(e.target.files);
+    if(files.length === 0) return;
+    
+    if(files.length > 10) {
+        alert("Please select up to 10 images max.");
+        return;
+    }
+    
+    const previewContainer = document.getElementById('image-previews-container');
+    const grid = document.getElementById('preview-grid');
+    if(!previewContainer || !grid) return;
+    
+    previewContainer.classList.remove('hidden');
+    grid.innerHTML = '<div class="text-sm text-gray-500 py-4 font-bold">Compressing images... Please wait.</div>';
+    
+    uploadedImages = [];
+    selectedCoverIndex = 0;
+    
+    Promise.all(files.map(f => compressImageWebP(f))).then(base64Arr => {
+        uploadedImages = base64Arr;
+        renderImagePreviews();
+    });
+};
+
 // Save logic handling both Device File and URL into Firebase
 function addProduct(event) {
     event.preventDefault();
@@ -115,13 +188,6 @@ function addProduct(event) {
         return;
     }
     
-    const saveProduct = (imgData) => {
-        // Image size check (approx 1MB limit for Firestore doc limit)
-        if(imgData.length > 1000000 && imgData.startsWith("data:image")) {
-            alert("Image is too large for database! Please use a smaller image file (Under 800KB) or use an Image URL instead.");
-            return;
-        }
-
         const name = document.getElementById('item-name').value;
         const cat = document.getElementById('item-cat').value;
         const price = document.getElementById('item-price').value;
@@ -137,7 +203,30 @@ function addProduct(event) {
         
         const id = 'p' + Date.now(); 
         
-        const docData = { name, cat, price: parseFloat(price), img: imgData, sale, desc, sizes, colors, timestamp: Date.now() };
+        let finalImages = [];
+        let finalCover = '';
+        
+        const urlInput = document.getElementById('item-img-url');
+        
+        if (uploadedImages.length > 0) {
+            finalImages = uploadedImages;
+            finalCover = uploadedImages[selectedCoverIndex] || uploadedImages[0];
+        } else if (urlInput && urlInput.value) {
+            finalImages = urlInput.value.split(',').map(u => u.trim()).filter(u => u);
+            finalCover = finalImages[0] || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500';
+        } else {
+            finalImages = ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500'];
+            finalCover = finalImages[0];
+        }
+        
+        // Estimate total payload size
+        const totalSize = JSON.stringify(finalImages).length;
+        if(totalSize > 950000) {
+            alert("Images are too large! Try uploading slightly fewer photos to stay under Database storage limits.");
+            return;
+        }
+        
+        const docData = { name, cat, price: parseFloat(price), img: finalCover, images: finalImages, sale, desc, sizes, colors, timestamp: Date.now() };
         
         // Push to Firebase directly
         db.collection("products").doc(id).set(docData).then(() => {
@@ -145,26 +234,15 @@ function addProduct(event) {
             document.getElementById('add-item-form').reset();
             const clothDiv = document.getElementById('clothing-options');
             if(clothDiv) clothDiv.style.display = 'block';
+            
+            // Reset image states
+            uploadedImages = [];
+            const prevCont = document.getElementById('image-previews-container');
+            if(prevCont) prevCont.classList.add('hidden');
         }).catch(e => {
             console.error(e);
             alert("Upload Failed! Check your internet connection.");
         });
-    };
-
-    const fileInput = document.getElementById('item-file');
-    const urlInput = document.getElementById('item-img-url');
-    
-    if (fileInput && fileInput.files && fileInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            saveProduct(e.target.result); 
-        };
-        reader.readAsDataURL(fileInput.files[0]);
-    } else if (urlInput && urlInput.value) {
-        saveProduct(urlInput.value);
-    } else {
-        saveProduct('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500'); // default
-    }
 }
 
 function deleteProduct(id) {
@@ -216,13 +294,38 @@ function showProductModal(id) {
     }
     
     const safeName = p.name.replace(/'/g, "\\'");
+    
+    let carouselHtml = '';
+    const imagesToDisplay = (p.images && p.images.length > 0) ? p.images : [p.img];
+    
+    if (imagesToDisplay.length === 1) {
+        carouselHtml = `<img src="${imagesToDisplay[0]}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/500'">`;
+    } else {
+        let imgsHtml = '';
+        let dotsHtml = '';
+        imagesToDisplay.forEach((img, i) => {
+            imgsHtml += `<div class="w-full h-full shrink-0 snap-center relative">
+                            <img src="${img}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/500'">
+                         </div>`;
+            dotsHtml += `<div class="w-2 h-2 rounded-full shadow-sm bg-white/50"></div>`;
+        });
+        carouselHtml = `
+            <div class="w-full h-full flex overflow-x-auto snap-x snap-mandatory hide-scrollbar" style="scrollbar-width: none;">
+                ${imgsHtml}
+            </div>
+            <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2 pointer-events-none">${dotsHtml}</div>
+            <div class="absolute top-1/2 left-4 bg-white/60 backdrop-blur w-8 h-8 flex items-center justify-center rounded-full pointer-events-none shadow-md text-gray-700 hidden md:flex"><i class="fa-solid fa-chevron-left text-xs"></i></div>
+            <div class="absolute top-1/2 right-4 bg-white/60 backdrop-blur w-8 h-8 flex items-center justify-center rounded-full pointer-events-none shadow-md text-gray-700 hidden md:flex"><i class="fa-solid fa-chevron-right text-xs"></i></div>
+        `;
+    }
+
     modal.innerHTML = `
         <div class="bg-white w-full max-w-4xl rounded-[2rem] shadow-2xl overflow-hidden mx-4 transform scale-95 transition-transform duration-500" id="modal-content">
             <div class="grid grid-cols-1 md:grid-cols-2 relative">
                 <button onclick="closeProductModal()" class="absolute z-20 top-4 right-4 bg-white/90 hover:bg-red-50 hover:text-red-500 backdrop-blur-md w-12 h-12 rounded-full flex items-center justify-center text-gray-800 shadow-lg transition duration-300 md:hidden"><i class="fa-solid fa-xmark text-xl"></i></button>
-                <div class="h-72 md:h-[600px] relative bg-gray-100">
-                    <img src="${p.img}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/500'">
-                    ${p.sale ? '<div class="absolute top-6 left-6 bg-red-500 text-white text-sm font-black px-4 py-2 rounded-full shadow-xl tracking-wider">SALE</div>' : ''}
+                <div class="h-72 md:h-[600px] relative bg-gray-100 group">
+                    ${carouselHtml}
+                    ${p.sale ? '<div class="absolute top-4 left-4 z-10 bg-red-500 text-white text-sm font-black px-4 py-2 rounded-full shadow-xl tracking-wider">SALE</div>' : ''}
                 </div>
                 <div class="p-8 md:p-12 flex flex-col max-h-[600px] overflow-y-auto">
                     <div class="flex justify-between items-start mb-4">
@@ -461,6 +564,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if(addForm) {
         addForm.addEventListener('submit', addProduct);
     }
+    
+    // Attach Multi-Image compress listener
+    const itemFileInput = document.getElementById('item-file');
+    if(itemFileInput) itemFileInput.addEventListener('change', window.handleImageFilesSelection);
     
     // Store Logo Upload event
     const logoInput = document.getElementById('store-logo-input');
