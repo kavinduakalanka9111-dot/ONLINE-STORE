@@ -27,7 +27,9 @@ function initStoreLogo() {
     }
 }
 
-// --- Product Management Logic (No Node.js / Database Needed) ---
+// --- Product Management Logic (Firebase Connected) ---
+let storeProducts = []; // Memory cache
+
 const defaultProducts = [
     {id: 'p1', name: 'Premium Cotton Shirt', cat: 'Clothing', price: 29.99, img: 'https://images.unsplash.com/photo-1596755094514-f87e32f85e2c?w=500', sale: false, desc: 'A comfortable and breathable cotton shirt suitable for any casual occasion.', sizes: ['M', 'L', 'XL'], colors: 'White, Blue'},
     {id: 'p2', name: 'Sony Wireless Headphones', cat: 'Electronics', price: 89.99, img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500', sale: false, desc: 'Noise-cancelling wireless headphones with 30-hour battery life.'},
@@ -39,22 +41,71 @@ const defaultProducts = [
     {id: 'p8', name: 'Ceramic Coffee Mug', cat: 'Household', price: 14.50, img: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=500', sale: true, desc: 'Handcrafted ceramic mug that keeps your coffee warm longer.'}
 ];
 
-function initProducts() {
-    if (!localStorage.getItem('storeProducts')) {
-        localStorage.setItem('storeProducts', JSON.stringify(defaultProducts));
-    }
+let db = null;
+const firebaseConfig = {
+  apiKey: "AIzaSyBfgj5yDZSmF7JpQWELknKWc3z0CW9Re4E",
+  authDomain: "online-store-30b44.firebaseapp.com",
+  projectId: "online-store-30b44",
+  storageBucket: "online-store-30b44.firebasestorage.app",
+  messagingSenderId: "233184633801",
+  appId: "1:233184633801:web:4dd0f3ca24f5dbc8ac3e18"
+};
+
+function loadFirebaseAndInit() {
+    const fsApp = document.createElement('script');
+    fsApp.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js";
+    document.head.appendChild(fsApp);
+    
+    fsApp.onload = () => {
+        const fsDb = document.createElement('script');
+        fsDb.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js";
+        document.head.appendChild(fsDb);
+        
+        fsDb.onload = () => {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            
+            // Sync products from firestore instead of localStorage
+            db.collection("products").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+                storeProducts = [];
+                snapshot.forEach((doc) => {
+                    storeProducts.push({ id: doc.id, ...doc.data() });
+                });
+                
+                if(storeProducts.length === 0) {
+                    storeProducts = [...defaultProducts];
+                }
+                
+                // Re-render UI elements automatically when DB changes
+                renderProductsToContainer('all-products-container');
+                renderProductsToContainer('featured-products-container', 4);
+                renderManageProducts();
+                
+                if(typeof renderDashboard === 'function') renderDashboard();
+            });
+        };
+    };
 }
 
 function getProducts() {
-    return JSON.parse(localStorage.getItem('storeProducts')) || [];
+    return storeProducts;
 }
 
-// Save logic handling both Device File and URL
+// Save logic handling both Device File and URL into Firebase
 function addProduct(event) {
     event.preventDefault();
+    if(!db) {
+        alert("Firebase is connecting... Please wait a second and try again.");
+        return;
+    }
     
-    // Extractor
     const saveProduct = (imgData) => {
+        // Image size check (approx 1MB limit for Firestore doc limit)
+        if(imgData.length > 1000000 && imgData.startsWith("data:image")) {
+            alert("Image is too large for database! Please use a smaller image file (Under 800KB) or use an Image URL instead.");
+            return;
+        }
+
         const name = document.getElementById('item-name').value;
         const cat = document.getElementById('item-cat').value;
         const price = document.getElementById('item-price').value;
@@ -68,50 +119,44 @@ function addProduct(event) {
             colors = document.getElementById('item-colors')?.value.trim() || '';
         }
         
-        const products = getProducts();
         const id = 'p' + Date.now(); 
         
-        try {
-            products.unshift({ id, name, cat, price: parseFloat(price), img: imgData, sale, desc, sizes, colors });
-            localStorage.setItem('storeProducts', JSON.stringify(products));
-            showToast('Item successfully published to Store!');
-            
-            // Reset form
+        const docData = { name, cat, price: parseFloat(price), img: imgData, sale, desc, sizes, colors, timestamp: Date.now() };
+        
+        // Push to Firebase directly
+        db.collection("products").doc(id).set(docData).then(() => {
+            showToast('Item successfully published to Live Store!');
             document.getElementById('add-item-form').reset();
             const clothDiv = document.getElementById('clothing-options');
-            if(clothDiv) clothDiv.style.display = 'block'; // defaults to Clothing usually on reset if it was so, wait, default is Clothing.
-            
-            renderManageProducts();
-        } catch(e) {
+            if(clothDiv) clothDiv.style.display = 'block';
+        }).catch(e => {
             console.error(e);
-            alert("Storage Limit Exceeded!\nYour image is too large to save offline. Please upload a smaller image file (Under 1MB) or use an Image URL instead.");
-        }
+            alert("Upload Failed! Check your internet connection.");
+        });
     };
 
     const fileInput = document.getElementById('item-file');
     const urlInput = document.getElementById('item-img-url');
     
-    // Prioritize file upload, fallback to URL, fallback to placeholder
     if (fileInput && fileInput.files && fileInput.files[0]) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            saveProduct(e.target.result); // Base64 data string
+            saveProduct(e.target.result); 
         };
         reader.readAsDataURL(fileInput.files[0]);
     } else if (urlInput && urlInput.value) {
         saveProduct(urlInput.value);
     } else {
-        saveProduct('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500'); // default empty image
+        saveProduct('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500'); // default
     }
 }
 
 function deleteProduct(id) {
-    if(confirm("Are you sure you want to delete this item?")) {
-        let products = getProducts();
-        products = products.filter(p => p.id !== id);
-        localStorage.setItem('storeProducts', JSON.stringify(products));
-        showToast('Item deleted successfully!');
-        renderManageProducts();
+    if(!db) return;
+    if(confirm("Are you sure you want to delete this item completely from the live database?")) {
+        db.collection("products").doc(id).delete().then(() => {
+            showToast('Item deleted successfully from Live Store!');
+        });
     }
 }
 
@@ -388,14 +433,12 @@ function removeItem(index) {
 // Global Initialization
 document.addEventListener('DOMContentLoaded', () => {
     initStoreLogo();
-    initProducts();
-    updateCartBadge();
     
-    // Automatically render specific page content if containers exist
+    // Load Firebase logic! This will automatically fetch real-time items from Cloud and render them
+    loadFirebaseAndInit();
+    
+    updateCartBadge();
     renderCart();
-    renderProductsToContainer('all-products-container');
-    renderProductsToContainer('featured-products-container', 4); // Show top 4 on home
-    renderManageProducts();
     
     // Attach form submission if on manage page
     const addForm = document.getElementById('add-item-form');
