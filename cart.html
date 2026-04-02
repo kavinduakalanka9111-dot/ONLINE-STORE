@@ -63,11 +63,79 @@
                     </button>
 
                     <form id="checkout-form" class="mt-6 border-t border-gray-100 pt-6 space-y-4 hidden" onsubmit="window.placeOrderFirebase(event)">
-                        <h4 class="font-bold text-gray-800 mb-2">Delivery Details</h4>
-                        <input type="text" id="order-name" placeholder="Your Full Name" required class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-accent">
-                        <input type="tel" id="order-phone" placeholder="Phone Number" required class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-accent">
-                        <textarea id="order-address" placeholder="Delivery Address" required class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-accent resize-none"></textarea>
-                        <button type="submit" class="w-full bg-brand hover:bg-accent text-white py-4 rounded-xl font-bold text-lg transition duration-300 shadow-xl mt-4 flex items-center justify-center gap-2">
+                        <h4 class="font-bold text-gray-800 mb-4 text-xl">Delivery Details</h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Full Name *</label>
+                                <input type="text" id="order-name" placeholder="Name" required class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-accent">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Primary Phone *</label>
+                                <input type="tel" id="order-phone" placeholder="07XXXXXXXX" required class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-accent">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Backup Phone</label>
+                                <input type="tel" id="order-phone-opt" placeholder="Optional" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-accent">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Country *</label>
+                                <select id="order-country" required class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-accent" onchange="updateDistricts()">
+                                    <option value="Sri Lanka">Sri Lanka</option>
+                                    <option value="Other">Other Country</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">State / District *</label>
+                                <select id="order-district" required class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-accent">
+                                    <option value="Ampara">Ampara</option>
+                                    <option value="Anuradhapura">Anuradhapura</option>
+                                    <option value="Badulla">Badulla</option>
+                                    <option value="Batticaloa">Batticaloa</option>
+                                    <option value="Colombo" selected>Colombo</option>
+                                    <option value="Galle">Galle</option>
+                                    <option value="Gampaha">Gampaha</option>
+                                    <option value="Hambantota">Hambantota</option>
+                                    <option value="Jaffna">Jaffna</option>
+                                    <option value="Kalutara">Kalutara</option>
+                                    <option value="Kandy">Kandy</option>
+                                    <option value="Kegalle">Kegalle</option>
+                                    <option value="Kilinochchi">Kilinochchi</option>
+                                    <option value="Kurunegala">Kurunegala</option>
+                                    <option value="Mannar">Mannar</option>
+                                    <option value="Matale">Matale</option>
+                                    <option value="Matara">Matara</option>
+                                    <option value="Moneragala">Moneragala</option>
+                                    <option value="Mullaitivu">Mullaitivu</option>
+                                    <option value="Nuwara Eliya">Nuwara Eliya</option>
+                                    <option value="Polonnaruwa">Polonnaruwa</option>
+                                    <option value="Puttalam">Puttalam</option>
+                                    <option value="Ratnapura">Ratnapura</option>
+                                    <option value="Trincomalee">Trincomalee</option>
+                                    <option value="Vavuniya">Vavuniya</option>
+                                </select>
+                                <input type="text" id="order-district-text" placeholder="State/Province" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-accent hidden">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Home Town / City *</label>
+                                <input type="text" id="order-town" placeholder="e.g. Nugegoda" required class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-accent">
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Full Delivery Address *</label>
+                                <textarea id="order-address" placeholder="Street name, House number" required class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-accent resize-none"></textarea>
+                            </div>
+
+                            <div class="md:col-span-2 mt-2">
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Preferred Color & Quantity Notes (Optional)</label>
+                                <input type="text" id="order-prefs" placeholder="Specific colors, sizes or quantities..." class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-accent">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-brand hover:bg-accent text-white py-4 rounded-xl font-bold text-lg transition duration-300 shadow-xl mt-6 flex items-center justify-center gap-2">
                             Place Order Now <i class="fa-solid fa-check"></i>
                         </button>
                     </form>
@@ -82,6 +150,20 @@
         </div>
     </div>
     
+    <script>
+        function updateDistricts() {
+            const country = document.getElementById('order-country').value;
+            const ds = document.getElementById('order-district');
+            const dt = document.getElementById('order-district-text');
+            if(country === 'Sri Lanka') {
+                ds.style.display = 'block'; ds.required = true;
+                dt.style.display = 'none'; dt.required = false;
+            } else {
+                ds.style.display = 'none'; ds.required = false;
+                dt.style.display = 'block'; dt.required = true;
+            }
+        }
+    </script>
     <script src="script.js"></script>
 </body>
 </html>

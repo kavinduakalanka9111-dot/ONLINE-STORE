@@ -789,14 +789,20 @@ window.placeOrderFirebase = function(e) {
     
     const name = document.getElementById('order-name').value;
     const phone = document.getElementById('order-phone').value;
+    const phoneOpt = document.getElementById('order-phone-opt').value || '';
+    const country = document.getElementById('order-country').value || 'Sri Lanka';
+    const district = country === 'Sri Lanka' ? document.getElementById('order-district').value : document.getElementById('order-district-text').value;
+    const town = document.getElementById('order-town').value;
     const address = document.getElementById('order-address').value;
+    const prefs = document.getElementById('order-prefs').value || '';
     
     let total = 0;
     cart.forEach(i => total += (i.price * i.quantity));
     
     const orderData = {
         id: 'ord' + Date.now(),
-        customerInfo: { name, phone, address },
+        customerInfo: { name, phone, phoneOpt, country, district, town, address },
+        preferences: prefs,
         items: cart,
         total: total,
         status: 'Pending',
@@ -831,9 +837,27 @@ window.placeOrderFirebase = function(e) {
         const showBtn = document.getElementById('show-checkout-btn');
         if(showBtn) showBtn.style.display = 'block';
         
-        alert(`Order Placed Successfully! We will prepare your items. Your Order ID is: ${orderData.id}`);
-        // Redirect home or order confirmation
-        window.location.href = 'index.html';
+        cart = [];
+        localStorage.removeItem('cart');
+        
+        alert(`Order Placed Successfully! Please click OK to send us the confirmation on WhatsApp!`);
+        
+        let woText = `🛍️ *New Web Order [${orderData.id}]*\n\n`;
+        woText += `*Customer:* ${name}\n`;
+        woText += `*Phone:* ${phone}${phoneOpt ? ', ' + phoneOpt : ''}\n`;
+        woText += `*Location:* ${town}, ${district}, ${country}\n`;
+        woText += `*Address:* ${address}\n`;
+        if (prefs) woText += `*Preferences:* ${prefs}\n`;
+        woText += `\n*Ordered Items:*\n`;
+        orderData.items.forEach((i, idx) => {
+             woText += `${idx+1}. ${i.name} (x${i.quantity}) - ${formatPriceText(i.price * i.quantity)}\n`;
+        });
+        woText += `\n*Total Amount:* ${formatPriceText(total)}\n\n`;
+        woText += `Please process my order. Thank you!`;
+        
+        const encoded = encodeURIComponent(woText);
+        window.location.href = `https://wa.me/94782809538?text=${encoded}`;
+        
     }).catch(err => {
         alert("Failed to place order. Try again. " + err.message);
     });
