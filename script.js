@@ -8,6 +8,16 @@ if (mobileMenuButton && mobileMenu) {
   });
 }
 
+// --- Price Formatter Helper ---
+const USD_RATE = 300;
+function formatPrice(lkrAmt) {
+    const usd = Number(lkrAmt) / USD_RATE;
+    return `LKR ${Number(lkrAmt).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} <span class="text-sm font-bold text-gray-500 ml-1">($${usd.toFixed(2)})</span>`;
+}
+function formatPriceText(lkrAmt) {
+    return `LKR ${Number(lkrAmt).toFixed(2)} ($${(Number(lkrAmt) / USD_RATE).toFixed(2)})`;
+}
+
 function initStoreLogo(firebaseLogoData = null) {
     const logoData = firebaseLogoData || localStorage.getItem('storeLogo');
     if(logoData) {
@@ -220,7 +230,7 @@ function showProductModal(id) {
                         <button onclick="closeProductModal()" class="hidden md:flex bg-gray-100 hover:bg-red-100 hover:text-red-500 text-gray-500 w-10 h-10 rounded-full items-center justify-center transition duration-300"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                     <h2 class="text-3xl md:text-4xl font-black text-gray-900 mb-2 leading-tight">${p.name}</h2>
-                    <div class="text-3xl md:text-4xl font-black text-brand mb-8 border-b border-gray-100 pb-8">$${Number(p.price).toFixed(2)}</div>
+                    <div class="text-3xl md:text-4xl font-black text-brand mb-8 border-b border-gray-100 pb-8">${formatPrice(p.price)}</div>
                     
                     <div class="mb-4">
                         <h4 class="font-bold text-gray-700 mb-2 uppercase text-xs tracking-widest">Description</h4>
@@ -285,7 +295,7 @@ function renderProductsToContainer(containerId, maxItems = null) {
                     <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
                 </div>
                 <div class="mt-auto flex justify-between items-center pt-4 border-t border-gray-100">
-                    <span class="text-2xl font-black text-brand leading-none">$${Number(p.price).toFixed(2)}</span>
+                    <span class="text-xl font-black text-brand leading-none">${formatPrice(p.price)}</span>
                     <button onclick="event.stopPropagation(); addToCart('${p.id}', '${p.name.replace(/'/g, "\\'")}', ${p.price}, '${p.img}')" class="bg-gray-900 hover:bg-accent text-white w-12 h-12 rounded-full flex items-center justify-center transition duration-300 shadow-md hover:shadow-xl transform hover:-translate-y-1">
                         <i class="fa-solid fa-cart-plus font-bold"></i>
                     </button>
@@ -320,7 +330,7 @@ function renderManageProducts() {
                     <div class="mb-2"><span class="bg-blue-50 text-accent px-3 py-1 rounded-full text-sm font-black tracking-wide">${p.cat}</span></div>
                     <div class="flex flex-wrap gap-1">${extraTags}</div>
                 </td>
-                <td class="p-4 font-black text-brand text-xl">$${Number(p.price).toFixed(2)}</td>
+                <td class="p-4 font-black text-brand text-xl">${formatPrice(p.price)}</td>
                 <td class="p-4 text-center">
                     <button onclick="deleteProduct('${p.id}')" class="bg-white border border-red-100 text-red-500 hover:bg-red-500 hover:text-white w-10 h-10 rounded-full shadow-sm transition transform hover:scale-110"><i class="fa-solid fa-trash"></i></button>
                 </td>
@@ -399,14 +409,14 @@ function renderCart() {
         <img src="${item.image}" alt="${item.name}" class="w-28 h-28 object-cover rounded-xl shadow-sm" onerror="this.src='https://via.placeholder.com/150'">
         <div class="flex-1 text-center sm:text-left">
             <h4 class="text-xl font-bold text-gray-800 mb-1">${item.name}</h4>
-            <p class="text-blue-500 font-medium mb-3">$${item.price.toFixed(2)}</p>
+            <p class="text-blue-500 font-medium mb-3">${formatPrice(item.price)}</p>
         </div>
         <div class="flex items-center border border-gray-200 rounded-full bg-gray-50 p-1 shadow-inner">
             <button onclick="updateQuantity(${index}, -1)" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-white hover:shadow transition">-</button>
             <span class="px-4 font-bold text-gray-800 w-12 text-center select-none">${item.quantity}</span>
             <button onclick="updateQuantity(${index}, 1)" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-white hover:shadow transition">+</button>
         </div>
-        <div class="font-black text-2xl text-gray-900 w-32 text-right">$${itemTotal.toFixed(2)}</div>
+        <div class="font-black text-xl text-gray-900 w-auto text-right">${formatPrice(itemTotal)}</div>
         <button onclick="removeItem(${index})" class="absolute sm:relative -top-3 -right-3 sm:top-0 sm:right-0 bg-red-100 text-red-500 hover:bg-red-500 hover:text-white sm:bg-transparent sm:hover:bg-red-50 w-10 h-10 rounded-full flex items-center justify-center transition duration-300"><i class="fa-solid fa-trash"></i></button>
       </div>
     `;
@@ -416,9 +426,9 @@ function renderCart() {
   
   const subtotalElem = document.getElementById('cart-subtotal');
   const taxElem = document.getElementById('cart-tax');
-  if(subtotalElem) subtotalElem.innerText = '$' + total.toFixed(2);
-  if(taxElem) taxElem.innerText = '$' + (total * 0.05).toFixed(2);
-  if(cartTotalAmount) cartTotalAmount.innerText = '$' + (total * 1.05).toFixed(2);
+  if(subtotalElem) subtotalElem.innerHTML = formatPrice(total);
+  if(taxElem) taxElem.innerHTML = formatPrice(total * 0.05);
+  if(cartTotalAmount) cartTotalAmount.innerHTML = formatPrice(total * 1.05);
 }
 
 function updateQuantity(index, change) {
@@ -547,7 +557,7 @@ function renderDashboard() {
     if(itemSelect.options.length <= 0) {
         itemSelect.innerHTML = '<option value="" disabled selected>Select an item...</option>';
         products.forEach(p => {
-            itemSelect.innerHTML += `<option value="${p.id}" data-price="${p.price}">${p.name} ($${p.price.toFixed(2)})</option>`;
+            itemSelect.innerHTML += `<option value="${p.id}" data-price="${p.price}">${p.name} - ${formatPriceText(p.price)}</option>`;
         });
         
         itemSelect.addEventListener('change', function() {
@@ -578,7 +588,7 @@ function renderDashboard() {
                 <td class="p-4 font-bold text-gray-700">${new Date(s.date).toLocaleDateString()}</td>
                 <td class="p-4 font-medium">${s.customer}</td>
                 <td class="p-4"><span class="font-bold text-gray-800">${s.itemName}</span> <span class="bg-blue-50 text-accent text-xs px-2 py-1 rounded-full ml-1 font-black">x${s.qty}</span></td>
-                <td class="p-4 font-black text-brand text-right">$${s.amount.toFixed(2)}</td>
+                <td class="p-4 font-black text-brand text-right">${formatPrice(s.amount)}</td>
                 <td class="p-4 text-center">
                     <button onclick="deleteSale('${s.id}')" class="text-red-400 hover:text-red-500 hover:scale-110 transition bg-red-50 w-8 h-8 rounded-full"><i class="fa-solid fa-trash text-sm"></i></button>
                 </td>
@@ -588,7 +598,7 @@ function renderDashboard() {
     
     tableBody.innerHTML = html || `<tr><td colspan="5" class="text-center p-10 text-gray-400 font-medium">No sales logged yet. When you receive WhatsApp orders, add them here to see your Reports!</td></tr>`;
     
-    document.getElementById('stat-revenue').innerText = '$' + totalRevenue.toFixed(2);
+    document.getElementById('stat-revenue').innerHTML = formatPrice(totalRevenue);
     document.getElementById('stat-orders').innerText = sales.length;
     document.getElementById('stat-items').innerText = totalItemsSold;
 
@@ -618,7 +628,7 @@ function renderCharts(sales) {
         data: {
             labels: last7Days,
             datasets: [{
-                label: 'Daily Revenue ($)',
+                label: 'Daily Revenue (LKR)',
                 data: revenueData,
                 borderColor: '#8b5cf6',
                 backgroundColor: 'rgba(139, 92, 246, 0.1)',
@@ -670,15 +680,15 @@ function checkoutWhatsApp() {
         const itemTotal = item.price * item.quantity;
         total += itemTotal;
         text += `${index + 1}. *${item.name}*\n`;
-        text += `   Price: $${Number(item.price).toFixed(2)}\n`;
+        text += `   Price: ${formatPriceText(item.price)}\n`;
         text += `   Quantity: ${item.quantity}\n`;
-        text += `   Total: $${Number(itemTotal).toFixed(2)}\n\n`;
+        text += `   Total: ${formatPriceText(itemTotal)}\n\n`;
     });
     
     const finalTotal = total * 1.05; // including 5% tax
-    text += `*Subtotal:* $${Number(total).toFixed(2)}\n`;
-    text += `*Tax (5%):* $${Number(total * 0.05).toFixed(2)}\n`;
-    text += `*Grand Total: $${Number(finalTotal).toFixed(2)}*\n\n`;
+    text += `*Subtotal:* ${formatPriceText(total)}\n`;
+    text += `*Tax (5%):* ${formatPriceText(total * 0.05)}\n`;
+    text += `*Grand Total: ${formatPriceText(finalTotal)}*\n\n`;
     text += `Please reply to confirm my order!`;
     
     const encodedText = encodeURIComponent(text);
