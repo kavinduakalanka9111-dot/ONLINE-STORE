@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports Dashboard - ONLINE STORE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      tailwind.config = { theme: { extend: { colors: { brand: '#0f172a', accent: '#3b82f6', admin: '#10b981', report: '#8b5cf6' } } } }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <!-- Navbar -->
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <a href="index.html" class="text-2xl font-black tracking-tighter text-brand flex items-center gap-2">
+                    <div class="bg-accent text-white p-2 rounded-lg"><i class="fa-solid fa-store"></i></div> ONLINE STORE
+                </a>
+                <div class="hidden md:flex space-x-8 items-center bg-gray-50 px-6 py-2 rounded-full border border-gray-100">
+                    <a href="index.html" class="text-gray-500 hover:text-accent font-medium transition duration-300">Home</a>
+                    <a href="products.html" class="text-gray-500 hover:text-accent font-medium transition duration-300">Shop</a>
+                    <a href="manage.html" class="text-gray-500 hover:text-admin font-bold transition duration-300"><i class="fa-solid fa-gear"></i> Manage Items</a>
+                    <a href="dashboard.html" class="text-report font-bold transition duration-300 relative after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-0.5 after:bg-report"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 fade-in">
+        
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 gap-4">
+            <div>
+                <h1 class="text-4xl font-black text-gray-900 mb-2 flex items-center gap-3"><i class="fa-solid fa-chart-pie text-report"></i> Business Analytics</h1>
+                <p class="text-gray-500 text-lg">Log your WhatsApp orders here to generate automatic income reports.</p>
+            </div>
+            <!-- Quick Stats -->
+            <div class="flex gap-4 w-full sm:w-auto">
+                <div class="bg-white px-6 py-4 rounded-3xl shadow-sm border border-gray-100 flex-1 sm:flex-none">
+                    <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total Revenue</div>
+                    <div class="text-2xl font-black text-emerald-500" id="stat-revenue">$0.00</div>
+                </div>
+                <div class="bg-white px-6 py-4 rounded-3xl shadow-sm border border-gray-100 flex-1 sm:flex-none">
+                    <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total Orders</div>
+                    <div class="text-2xl font-black text-report" id="stat-orders">0</div>
+                </div>
+                <div class="bg-white px-6 py-4 rounded-3xl shadow-sm border border-gray-100 flex-1 sm:flex-none">
+                    <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Items Sold</div>
+                    <div class="text-2xl font-black text-accent" id="stat-items">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+            <!-- Left Column: Add Sale Form & Top Categories Chart -->
+            <div class="space-y-8">
+                <!-- Log Sale Form -->
+                <div class="bg-white rounded-3xl shadow-xl shadow-report/5 border border-report/20 p-8">
+                    <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2"><i class="fa-solid fa-plus-circle text-report"></i> Log WhatsApp Order</h3>
+                    <form id="log-sale-form" class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-2 text-sm">Sale Date</label>
+                            <input type="date" id="sale-date" class="w-full px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-report transition" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-2 text-sm">Customer Name (Optional)</label>
+                            <input type="text" id="sale-customer" class="w-full px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-report transition" placeholder="WhatsApp Name">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-2 text-sm">Purchased Item</label>
+                            <select id="sale-item" class="w-full px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-report transition" required>
+                                <!-- Injected from JS -->
+                            </select>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="w-1/3">
+                                <label class="block text-gray-700 font-bold mb-2 text-sm">Qty</label>
+                                <input type="number" id="sale-qty" value="1" min="1" class="w-full px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-report transition" required>
+                            </div>
+                            <div class="w-2/3">
+                                <label class="block text-gray-700 font-bold mb-2 text-sm">Total Paid ($)</label>
+                                <input type="number" id="sale-amount" step="0.01" min="0" class="w-full px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-report transition font-bold text-brand" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="mt-4 bg-report hover:bg-purple-600 text-white font-bold py-3 rounded-xl transition duration-300 w-full shadow-lg transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                            Record Sale <i class="fa-solid fa-check"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Category Chart -->
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 text-center h-80 flex flex-col justify-center items-center relative">
+                    <h3 class="text-sm font-black text-gray-400 absolute top-6 left-6 uppercase tracking-widest">Sales by Category</h3>
+                    <div class="w-full max-w-[200px] mt-8">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Revenue Chart & Table -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Revenue Chart -->
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 h-80 relative">
+                    <h3 class="text-sm font-black text-gray-400 absolute top-6 left-6 uppercase tracking-widest">Past 7 Days Revenue</h3>
+                    <div class="w-full h-full pt-8">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Sales Table -->
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 bg-gray-50">
+                        <h3 class="text-xl font-bold text-gray-900">Recent Sales History</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-white border-b border-gray-100 text-gray-500 text-sm uppercase tracking-wider">
+                                    <th class="p-4">Date</th>
+                                    <th class="p-4">Customer</th>
+                                    <th class="p-4">Item & Qty</th>
+                                    <th class="p-4 text-right">Revenue</th>
+                                    <th class="p-4 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sales-table-body">
+                                <!-- Rendered via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set today's date in form
+            const dateInput = document.getElementById('sale-date');
+            if(dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+            
+            const saleForm = document.getElementById('log-sale-form');
+            if(saleForm) saleForm.addEventListener('submit', addSale);
+            
+            // Only render dashboard context if functions are available
+            if(typeof renderDashboard === 'function') {
+                renderDashboard();
+            }
+        });
+    </script>
+</body>
+</html>

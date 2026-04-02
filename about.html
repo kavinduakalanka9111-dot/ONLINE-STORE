@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - ONLINE STORE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+      tailwind.config = { theme: { extend: { colors: { brand: '#0f172a', accent: '#3b82f6' } } } }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <a href="index.html" class="text-2xl font-black tracking-tighter text-brand flex items-center gap-2">
+                    <div class="bg-accent text-white p-2 rounded-lg"><i class="fa-solid fa-store"></i></div> ONLINE STORE
+                </a>
+                <div class="hidden md:flex space-x-8 items-center bg-gray-50 px-6 py-2 rounded-full border border-gray-100">
+                    <a href="index.html" class="text-gray-500 hover:text-accent font-medium transition duration-300">Home</a>
+                    <a href="products.html" class="text-gray-500 hover:text-accent font-medium transition duration-300">Shop</a>
+                    <a href="about.html" class="text-accent font-bold transition duration-300 relative after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-0.5 after:bg-accent">About</a>
+                    <a href="contact.html" class="text-gray-500 hover:text-accent font-medium transition duration-300">Contact</a>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="cart.html" class="relative text-brand hover:text-accent transition duration-300 bg-gray-100 p-3 rounded-full">
+                        <i class="fa-solid fa-cart-shopping text-xl"></i><span class="cart-badge absolute -top-1 -right-1 bg-red-500 shadow-md text-white md text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center" style="display:none;">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- About Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 fade-in">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+            <div>
+                <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800" alt="About Us" class="rounded-3xl shadow-2xl transform shadow-blue-500/20 hover:scale-105 transition duration-700">
+            </div>
+            <div>
+                <span class="text-accent font-bold tracking-widest uppercase mb-4 text-sm flex items-center gap-2"><div class="w-8 h-0.5 bg-accent"></div> Our Story</span>
+                <h1 class="text-4xl md:text-5xl font-black text-gray-900 mb-6 leading-tight">Redefining Premium <br> E-Commerce</h1>
+                <p class="text-lg text-gray-600 mb-8 leading-relaxed">ONLINE STORE was founded with a simple goal: provide a seamless and premium shopping experience for people everywhere. We handpick the finest collections of clothing, high-tech electronics, sophisticated watches, and luxury lifestyle items that match your ambition.</p>
+                
+                <div class="grid grid-cols-2 gap-8 mb-8">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h4 class="text-3xl font-black text-brand mb-2">10k+</h4>
+                        <p class="text-gray-500 font-medium">Happy Customers</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h4 class="text-3xl font-black text-brand mb-2">100%</h4>
+                        <p class="text-gray-500 font-medium">Authentic Products</p>
+                    </div>
+                </div>
+                
+                <a href="products.html" class="bg-brand text-white px-8 py-4 rounded-full font-bold inline-flex items-center gap-2 hover:bg-accent transition duration-300 shadow-lg">Start Shopping <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

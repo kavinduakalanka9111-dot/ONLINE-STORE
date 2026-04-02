@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Items - ONLINE STORE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+      tailwind.config = { theme: { extend: { colors: { brand: '#0f172a', accent: '#3b82f6', admin: '#10b981' } } } }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <!-- Navbar -->
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <a href="index.html" class="text-2xl font-black tracking-tighter text-brand flex items-center gap-2">
+                    <div class="bg-accent text-white p-2 rounded-lg"><i class="fa-solid fa-store"></i></div> ONLINE STORE
+                </a>
+                <div class="hidden md:flex space-x-8 items-center bg-gray-50 px-6 py-2 rounded-full border border-gray-100">
+                    <a href="index.html" class="text-gray-500 hover:text-accent font-medium transition duration-300">Home</a>
+                    <a href="products.html" class="text-gray-500 hover:text-accent font-medium transition duration-300">Shop</a>
+                    <a href="manage.html" class="text-emerald-500 font-bold transition duration-300 relative after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-0.5 after:bg-emerald-500"><i class="fa-solid fa-gear"></i> Manage Items</a>
+                    <a href="dashboard.html" class="text-gray-500 hover:text-report font-medium transition duration-300"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Admin dashboard layout -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 fade-in">
+        <div class="mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+            <div>
+                <h1 class="text-4xl font-black text-gray-900 mb-2">Store Admin Panel</h1>
+                <p class="text-gray-500 text-lg">Add custom products directly from your device</p>
+            </div>
+            
+            <div class="bg-white px-6 py-4 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4 w-full sm:w-auto">
+                <div id="admin-logo-preview" class="w-14 h-14 rounded-full bg-accent text-white flex items-center justify-center text-2xl shadow-md overflow-hidden"><i class="fa-solid fa-store"></i></div>
+                <div>
+                    <label class="text-xs font-black text-gray-400 block mb-1 uppercase tracking-wider">Store Profile Photo</label>
+                    <label class="text-sm font-bold text-accent cursor-pointer hover:underline transition">
+                        Change Photo
+                        <input type="file" id="store-logo-input" accept="image/*" class="hidden">
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <!-- Add Form -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-3xl shadow-xl shadow-brand/5 border border-gray-100 p-8 sticky top-28">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2"><i class="fa-solid fa-square-plus text-admin"></i> Add New Item</h3>
+                    <form id="add-item-form">
+                        <div class="space-y-5">
+                            <div>
+                                <label class="block text-gray-700 font-bold mb-2">Product Name</label>
+                                <input type="text" id="item-name" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-admin focus:border-transparent transition" placeholder="e.g. Vintage Leather Jacket" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-gray-700 font-bold mb-2">Item Description</label>
+                                <textarea id="item-desc" rows="3" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-admin focus:border-transparent transition resize-none" placeholder="Provide a premium description for this item..."></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-700 font-bold mb-2">Category</label>
+                                <select id="item-cat" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-admin focus:border-transparent transition">
+                                    <option value="Clothing">Clothing</option>
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="Watches">Watches</option>
+                                    <option value="Toys">Toys</option>
+                                    <option value="Household">Household</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+
+                            <!-- Dynamic Clothing Section -->
+                            <div id="clothing-options" class="bg-emerald-50/50 p-5 rounded-2xl border border-emerald-100 space-y-5">
+                                <div class="mb-2">
+                                    <label class="block text-admin font-bold mb-3">Clothing Type</label>
+                                    <div class="flex flex-col gap-3">
+                                        <label class="flex items-center gap-3 cursor-pointer bg-white px-4 py-3 rounded-xl border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="radio" name="clothing_type" value="tops" checked class="w-5 h-5 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold text-gray-700">Tops / Shirts / Dresses</span></label>
+                                        <label class="flex items-center gap-3 cursor-pointer bg-white px-4 py-3 rounded-xl border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="radio" name="clothing_type" value="bottoms" class="w-5 h-5 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold text-gray-700">Trousers / Bottoms</span></label>
+                                    </div>
+                                </div>
+
+                                <div id="sizes-tops">
+                                    <label class="block text-admin font-bold mb-3">Available Sizes (Tops)</label>
+                                    <div class="flex flex-wrap gap-2 text-sm">
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-2 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="XS" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">XS</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-2 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="S" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">S</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-2 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="M" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">M</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-2 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="L" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">L</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-2 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="XL" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">XL</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-2 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="2XL" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">2XL</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-2 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="3XL" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">3XL</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-2 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="4XL" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">4XL</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-2 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="5XL" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">5XL</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-2 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="6XL" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">6XL</span></label>
+                                    </div>
+                                </div>
+
+                                <div id="sizes-bottoms" style="display: none;">
+                                    <label class="block text-admin font-bold mb-3">Available Sizes (Trousers)</label>
+                                    <div class="flex flex-wrap gap-2 text-sm">
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="26" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">26</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="27" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">27</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="28" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">28</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="29" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">29</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="30" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">30</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="31" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">31</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="32" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">32</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="33" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">33</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="34" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">34</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="35" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">35</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="36" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">36</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="37" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">37</span></label>
+                                        <label class="flex items-center gap-2 cursor-pointer bg-white px-3 py-2 rounded-lg border border-emerald-200 shadow-sm hover:bg-emerald-50 transition"><input type="checkbox" value="38" class="size-cb w-4 h-4 text-admin focus:ring-admin border-emerald-300"> <span class="font-bold">38</span></label>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-admin font-bold mb-2">Available Colors</label>
+                                    <input type="text" id="item-colors" class="w-full px-4 py-3 rounded-xl bg-white border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-admin transition" placeholder="e.g. Red, Black, Navy Blue">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-700 font-bold mb-2">Price ($)</label>
+                                <input type="number" id="item-price" step="0.01" min="0" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-admin focus:border-transparent transition" placeholder="49.99" required>
+                            </div>
+                            
+                            <!-- Image Source -->
+                            <div class="bg-gray-50 border border-gray-200 p-5 rounded-2xl relative">
+                                <div class="absolute -top-3 left-4 bg-gray-800 text-white text-xs font-bold px-2 py-1 rounded">IMAGE SOURCE</div>
+                                <div class="space-y-4 pt-2">
+                                    <div>
+                                        <label class="text-sm text-gray-800 font-bold mb-2 block"><i class="fa-solid fa-folder-open text-accent"></i> Upload from Device</label>
+                                        <input type="file" id="item-file" accept="image/*" class="w-full block text-sm text-gray-500 file:mr-4 file:py-2 file:cursor-pointer file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-accent hover:file:bg-blue-100 transition border border-gray-200 rounded-full bg-white">
+                                    </div>
+                                    <div class="flex items-center">
+                                        <hr class="flex-grow border-gray-300"><span class="px-3 text-xs text-gray-400 font-black">OR</span><hr class="flex-grow border-gray-300">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm text-gray-800 font-bold mb-2 block"><i class="fa-solid fa-link text-accent"></i> Image URL</label>
+                                        <input type="url" id="item-img-url" class="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-admin transition" placeholder="https://example.com/item.jpg">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 py-3 bg-gray-50 border border-gray-100 px-4 rounded-xl cursor-pointer hover:bg-gray-100 transition">
+                                <input type="checkbox" id="item-sale" class="w-5 h-5 rounded text-admin focus:ring-admin accent-emerald-500 cursor-pointer">
+                                <label for="item-sale" class="text-gray-700 font-bold w-full cursor-pointer">Mark as "Sale Indicator"</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="mt-8 bg-admin hover:bg-emerald-600 text-white font-bold py-4 rounded-xl transition duration-300 w-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                            Add to Store <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Items List -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                        <h3 class="text-xl font-bold text-gray-900">Your Current Inventory</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-white border-b border-gray-100 text-gray-500 text-sm uppercase tracking-wider">
+                                    <th class="p-4 rounded-tl-xl text-center">Image</th>
+                                    <th class="p-4">Item Details</th>
+                                    <th class="p-4">Category / Tags</th>
+                                    <th class="p-4">Price</th>
+                                    <th class="p-4 text-center rounded-tr-xl">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="manage-products-tbody">
+                                <!-- Rendered via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Toggle Clothing specific options
+        document.getElementById('item-cat').addEventListener('change', function(e) {
+            const clothDiv = document.getElementById('clothing-options');
+            if(e.target.value === 'Clothing') {
+                clothDiv.style.display = 'block';
+            } else {
+                clothDiv.style.display = 'none';
+            }
+        });
+
+        // Toggle Tops vs Bottoms Sizes
+        document.querySelectorAll('input[name="clothing_type"]').forEach(radio => {
+            radio.addEventListener('change', function(e) {
+                if(e.target.value === 'tops') {
+                    document.getElementById('sizes-tops').style.display = 'block';
+                    document.getElementById('sizes-bottoms').style.display = 'none';
+                    document.querySelectorAll('#sizes-bottoms input').forEach(el => el.checked = false);
+                } else {
+                    document.getElementById('sizes-tops').style.display = 'none';
+                    document.getElementById('sizes-bottoms').style.display = 'block';
+                    document.querySelectorAll('#sizes-tops input').forEach(el => el.checked = false);
+                }
+            });
+        });
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

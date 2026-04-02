@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - ONLINE STORE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: '#0f172a', /* slate-900 */
+              accent: '#3b82f6', /* blue-500 */
+            }
+          }
+        }
+      }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <!-- Navbar -->
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center">
+                    <a href="index.html" class="text-2xl font-black tracking-tighter text-brand flex items-center gap-2">
+                        <div class="bg-accent text-white p-2 rounded-lg"><i class="fa-solid fa-store"></i></div>
+                        ONLINE STORE
+                    </a>
+                </div>
+                <div class="hidden md:flex space-x-8 items-center bg-gray-50 px-6 py-2 rounded-full border border-gray-100">
+                    <a href="index.html" class="text-accent font-bold transition duration-300 relative after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-0.5 after:bg-accent">Home</a>
+                    <a href="products.html" class="text-gray-500 hover:text-accent font-medium transition duration-300">Shop</a>
+                    <a href="about.html" class="text-gray-500 hover:text-accent font-medium transition duration-300">About</a>
+                    <a href="contact.html" class="text-gray-500 hover:text-accent font-medium transition duration-300">Contact</a>
+                    <a href="manage.html" class="text-emerald-500 hover:text-emerald-600 font-bold transition duration-300"><i class="fa-solid fa-gear"></i> Manage</a>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="cart.html" class="relative text-brand hover:text-accent transition duration-300 bg-gray-100 p-3 rounded-full hover:bg-blue-50">
+                        <i class="fa-solid fa-cart-shopping text-xl"></i>
+                        <span class="cart-badge absolute -top-1 -right-1 bg-red-500 shadow-md text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center" style="display:none;">0</span>
+                    </a>
+                    <button id="mobile-menu-btn" class="md:hidden text-gray-600 hover:text-accent focus:outline-none bg-gray-100 p-3 rounded-full">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-100 shadow-lg absolute w-full">
+            <div class="px-4 pt-2 pb-6 space-y-2">
+                <a href="index.html" class="block px-4 py-3 bg-blue-50 rounded-lg text-accent font-bold">Home</a>
+                <a href="products.html" class="block px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg hover:text-accent font-medium">Shop</a>
+                <a href="about.html" class="block px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg hover:text-accent font-medium">About</a>
+                <a href="contact.html" class="block px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg hover:text-accent font-medium">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="relative bg-brand overflow-hidden fade-in">
+        <div class="absolute inset-0">
+            <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&fit=crop" alt="Hero Image" class="w-full h-full object-cover opacity-30 mix-blend-overlay">
+            <div class="absolute inset-0 bg-gradient-to-r from-brand via-brand/80 to-transparent"></div>
+        </div>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 lg:py-48 flex flex-col md:w-2/3 items-start justify-center text-left">
+            <span class="text-accent font-bold tracking-wider uppercase mb-4 text-sm flex items-center gap-2"><div class="w-8 h-0.5 bg-accent"></div> Welcome to the Premium</span>
+            <h1 class="text-5xl md:text-7xl font-extrabold text-white tracking-tight mb-6 leading-tight">Elevate Your <br> <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Shopping Experience</span></h1>
+            <p class="mt-4 max-w-xl text-lg md:text-xl text-gray-300 mb-10 leading-relaxed">Discover unmatched quality and trending aesthetics. Explore clothing, electronics, and accessories carefully curated for your modern lifestyle.</p>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <a href="products.html" class="glow-btn bg-accent text-white px-10 py-4 rounded-full font-bold text-lg text-center transition duration-300 shadow-xl shadow-blue-500/20">Shop Collection <i class="fa-solid fa-arrow-right ml-2 text-sm"></i></a>
+                <a href="about.html" class="bg-white/5 text-white backdrop-blur-md px-10 py-4 rounded-full font-bold text-lg text-center hover:bg-white/10 transition duration-300 border border-white/10 hidden sm:block">Our Story</a>
+            </div>
+            
+            <div class="mt-16 flex items-center gap-8 text-gray-400 text-sm font-medium">
+                <div class="flex items-center gap-2"><i class="fa-solid fa-truck-fast text-emerald-400 text-lg"></i> Free Shipping worldwide</div>
+                <div class="flex items-center gap-2"><i class="fa-solid fa-shield-halved text-emerald-400 text-lg"></i> 30-Day returns</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 fade-in" style="animation-delay: 0.2s">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl font-black text-gray-900 mb-4 inline-block relative border-b-4 border-accent pb-2">Discover Categories</h2>
+            <p class="text-gray-500 text-lg">Find exactly what you need from our curated collections</p>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 shadow-sm">
+            <!-- Category 1 -->
+            <a href="products.html" class="group relative rounded-2xl overflow-hidden shadow-lg h-64 lg:h-80 w-full block">
+                <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=500" alt="Clothes" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-6">
+                    <h3 class="text-white text-2xl font-bold mb-1 transform group-hover:-translate-y-2 transition duration-300">Clothing</h3>
+                    <p class="text-gray-300 text-sm opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition duration-300">View Collection <i class="fa-solid fa-arrow-right ml-1"></i></p>
+                </div>
+            </a>
+            <!-- Category 2 -->
+            <a href="products.html" class="group relative rounded-2xl overflow-hidden shadow-lg h-64 lg:h-80 w-full block">
+                <img src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=500" alt="Electronics" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-6">
+                     <h3 class="text-white text-2xl font-bold mb-1 transform group-hover:-translate-y-2 transition duration-300">Electronics</h3>
+                     <p class="text-gray-300 text-sm opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition duration-300">View Collection <i class="fa-solid fa-arrow-right ml-1"></i></p>
+                </div>
+            </a>
+            <!-- Category 3 -->
+            <a href="products.html" class="group relative rounded-2xl overflow-hidden shadow-lg h-64 lg:h-80 w-full block">
+                <img src="https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=500" alt="Watches" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-6">
+                     <h3 class="text-white text-2xl font-bold mb-1 transform group-hover:-translate-y-2 transition duration-300">Watches</h3>
+                     <p class="text-gray-300 text-sm opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition duration-300">View Collection <i class="fa-solid fa-arrow-right ml-1"></i></p>
+                </div>
+            </a>
+            <!-- Category 4 -->
+            <a href="products.html" class="group relative rounded-2xl overflow-hidden shadow-lg h-64 lg:h-80 w-full block">
+                <img src="https://images.unsplash.com/photo-1559445347-1909a1acc3b9?w=500" alt="Toys" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-6">
+                     <h3 class="text-white text-2xl font-bold mb-1 transform group-hover:-translate-y-2 transition duration-300">Toys & Bears</h3>
+                     <p class="text-gray-300 text-sm opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition duration-300">View Collection <i class="fa-solid fa-arrow-right ml-1"></i></p>
+                </div>
+            </a>
+            <!-- Category 5 -->
+            <a href="products.html" class="group relative rounded-2xl overflow-hidden shadow-lg h-64 lg:h-80 w-full block col-span-2 md:col-span-4 lg:col-span-1">
+                <img src="https://images.unsplash.com/photo-1583847268964-b28ce8f300c0?w=500" alt="Household" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                 <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-6">
+                     <h3 class="text-white text-2xl font-bold mb-1 transform group-hover:-translate-y-2 transition duration-300">Household</h3>
+                     <p class="text-gray-300 text-sm opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition duration-300">View Collection <i class="fa-solid fa-arrow-right ml-1"></i></p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Featured Products -->
+    <div class="bg-gray-100 py-20 border-t border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 fade-in" style="animation-delay: 0.4s">
+            <div class="flex justify-between items-end mb-12">
+                <div>
+                    <h2 class="text-4xl font-black text-gray-900 mb-2">Trending Now</h2>
+                    <p class="text-gray-500">Top picks requested by our customers</p>
+                </div>
+                <a href="products.html" class="text-accent hover:text-blue-700 font-bold hidden sm:flex items-center gap-2 group">
+                    View All Products <div class="bg-white group-hover:bg-accent group-hover:text-white p-2 rounded-full transition duration-300 shadow-sm"><i class="fa-solid fa-arrow-right text-sm"></i></div>
+                </a>
+            </div>
+            
+            <div id="featured-products-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Dynamically injected items go here via JS -->
+            </div>
+            
+            <div class="mt-12 text-center sm:hidden">
+                <a href="products.html" class="inline-flex bg-white border border-gray-200 text-brand px-8 py-3 rounded-full font-bold hover:bg-gray-50 transition shadow-sm">View All Products</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Newsletter -->
+    <div class="bg-accent py-16 relative overflow-hidden">
+        <div class="absolute inset-0 bg-blue-600 opacity-50" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;"></div>
+        <div class="max-w-4xl mx-auto px-4 relative z-10 text-center">
+            <h2 class="text-3xl md:text-5xl font-black text-white mb-6">Join The Club</h2>
+            <p class="text-blue-100 text-lg mb-8 max-w-2xl mx-auto">Subscribe for exclusive updates, new arrivals, and insider-only discounts. Unsubscribe anytime.</p>
+            <form class="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto" onsubmit="event.preventDefault(); showToast('Subscribed successfully!');">
+                <input type="email" placeholder="Your email address" class="flex-1 px-6 py-4 rounded-full focus:outline-none focus:ring-4 focus:ring-blue-300 text-gray-900 shadow-lg text-lg" required>
+                <button type="submit" class="bg-brand text-white px-8 py-4 rounded-full font-bold hover:bg-gray-800 transition duration-300 shadow-lg whitespace-nowrap">Subscribe <i class="fa-solid fa-paper-plane ml-2"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-brand text-gray-300 py-16 border-t font-medium border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-12 gap-12">
+            <div class="md:col-span-5">
+                <a href="index.html" class="text-3xl font-black tracking-tighter text-white mb-6 flex items-center gap-2">
+                    <div class="bg-accent text-white p-2 rounded-lg"><i class="fa-solid fa-store"></i></div> ONLINE STORE
+                </a>
+                <p class="mb-8 pr-10 text-gray-400 leading-relaxed text-lg">Your premier destination for high-quality fashion, electronics, and lifestyle products. We deliver excellence straight to your doorstep.</p>
+                <div class="flex space-x-4">
+                    <a href="#" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center hover:bg-accent transition hover:text-white shadow-md hover:shadow-accent/50 transform hover:-translate-y-1"><i class="fa-brands fa-facebook-f text-xl"></i></a>
+                    <a href="#" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center hover:bg-accent transition hover:text-white shadow-md hover:shadow-accent/50 transform hover:-translate-y-1"><i class="fa-brands fa-twitter text-xl"></i></a>
+                    <a href="#" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center hover:bg-accent transition hover:text-white shadow-md hover:shadow-accent/50 transform hover:-translate-y-1"><i class="fa-brands fa-instagram text-xl"></i></a>
+                </div>
+            </div>
+            <div class="md:col-span-3">
+                <h4 class="text-white text-xl font-bold mb-6 relative inline-block after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-1/2 after:h-0.5 after:bg-accent">Quick Links</h4>
+                <ul class="space-y-4">
+                    <li><a href="index.html" class="hover:text-accent transition flex items-center gap-2"><i class="fa-solid fa-angle-right text-xs"></i> Home</a></li>
+                    <li><a href="products.html" class="hover:text-accent transition flex items-center gap-2"><i class="fa-solid fa-angle-right text-xs"></i> Shop</a></li>
+                    <li><a href="about.html" class="hover:text-accent transition flex items-center gap-2"><i class="fa-solid fa-angle-right text-xs"></i> About Us</a></li>
+                    <li><a href="contact.html" class="hover:text-accent transition flex items-center gap-2"><i class="fa-solid fa-angle-right text-xs"></i> Contact</a></li>
+                </ul>
+            </div>
+            <div class="md:col-span-4">
+                <h4 class="text-white text-xl font-bold mb-6 relative inline-block after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-1/2 after:h-0.5 after:bg-accent">Get In Touch</h4>
+                <ul class="space-y-6">
+                    <li class="flex items-start gap-4">
+                        <div class="bg-gray-800 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-location-dot text-accent"></i></div> 
+                        <span>123 Store Lane, Level 4,<br>Colombo 00100, Sri Lanka</span>
+                    </li>
+                    <li class="flex items-center gap-4">
+                        <div class="bg-gray-800 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-phone text-accent"></i></div>
+                        <span class="text-lg">+94 77 123 4567</span>
+                    </li>
+                    <li class="flex items-center gap-4">
+                        <div class="bg-gray-800 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-envelope text-accent"></i></div>
+                        <span>support@onlinestore.com</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 pt-8 border-t border-gray-800 text-center text-gray-500 flex flex-col md:flex-row justify-between items-center gap-4">
+             <p>&copy; 2026 ONLINE STORE. Crafted with passion in Sri Lanka.</p>
+             <div class="flex gap-2">
+                <img src="https://img.icons8.com/color/48/000000/visa.png" class="w-10 h-auto grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition" alt="Visa">
+                <img src="https://img.icons8.com/color/48/000000/mastercard.png" class="w-10 h-auto grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition" alt="Mastercard">
+                <img src="https://img.icons8.com/color/48/paypal.png" class="w-10 h-auto grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition" alt="PayPal">
+             </div>
+        </div>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
