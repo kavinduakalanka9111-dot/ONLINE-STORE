@@ -72,9 +72,8 @@ function loadFirebaseAndInit() {
                     storeProducts.push({ id: doc.id, ...doc.data() });
                 });
                 
-                if(storeProducts.length === 0) {
-                    storeProducts = [...defaultProducts];
-                }
+                // If empty, the store will now correctly show as empty instead of locking default items
+                // Removed defaultProducts fallback
                 
                 // Re-render UI elements automatically when DB changes
                 renderProductsToContainer('all-products-container');
