@@ -343,9 +343,12 @@ function showProductModal(id) {
                     ${sizesHtml}
                     ${colorsHtml}
                     
-                    <div class="mt-10 pt-4">
-                        <button onclick="addToCart('${p.id}', '${safeName}', ${p.price}, '${p.img}'); showToast('Added to Cart!');" class="w-full bg-brand hover:bg-accent text-white py-5 rounded-2xl font-bold text-xl transition duration-300 shadow-[0_10px_30px_rgba(15,23,42,0.2)] hover:shadow-[0_15px_40px_rgba(59,130,246,0.3)] transform hover:-translate-y-1 flex items-center justify-center gap-3">
-                            Add to Cart <i class="fa-solid fa-cart-arrow-down"></i>
+                    <div class="mt-10 pt-4 flex flex-col sm:flex-row gap-4">
+                        <button onclick="addToCart('${p.id}', '${safeName}', ${p.price}, '${p.img}'); showToast('Added to Cart!');" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 py-4 rounded-2xl font-bold text-lg transition duration-300 shadow-sm flex items-center justify-center gap-2">
+                            Add to Cart <i class="fa-solid fa-cart-shopping"></i>
+                        </button>
+                        <button onclick="addToCart('${p.id}', '${safeName}', ${p.price}, '${p.img}'); window.location.href='cart.html';" class="flex-1 bg-brand hover:bg-accent text-white py-4 rounded-2xl font-bold text-lg transition duration-300 shadow-lg transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                            Order Now <i class="fa-solid fa-bolt text-yellow-400"></i>
                         </button>
                     </div>
                 </div>
@@ -528,10 +531,8 @@ function renderCart() {
   cartContainer.innerHTML = html;
   
   const subtotalElem = document.getElementById('cart-subtotal');
-  const taxElem = document.getElementById('cart-tax');
   if(subtotalElem) subtotalElem.innerHTML = formatPrice(total);
-  if(taxElem) taxElem.innerHTML = formatPrice(total * 0.05);
-  if(cartTotalAmount) cartTotalAmount.innerHTML = formatPrice(total * 1.05);
+  if(cartTotalAmount) cartTotalAmount.innerHTML = formatPrice(total);
 }
 
 function updateQuantity(index, change) {
@@ -552,6 +553,14 @@ function removeItem(index) {
 // Global Initialization
 document.addEventListener('DOMContentLoaded', () => {
     initStoreLogo();
+    
+    // Global floating WA button
+    const waBtn = document.createElement('a');
+    waBtn.href = "https://wa.me/94782809538";
+    waBtn.target = "_blank";
+    waBtn.className = "fixed bottom-5 left-5 z-[90] bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center text-3xl shadow-xl hover:shadow-2xl hover:scale-110 transition duration-300";
+    waBtn.innerHTML = '<i class="fa-brands fa-whatsapp"></i>';
+    document.body.appendChild(waBtn);
     
     // Load Firebase logic! This will automatically fetch real-time items from Cloud and render them
     loadFirebaseAndInit();
@@ -772,34 +781,60 @@ function renderCharts(sales) {
     });
 }
 
-// --- WhatsApp Checkout Logic ---
-function checkoutWhatsApp() {
+// --- Website Inline Checkout Logic ---
+window.placeOrderFirebase = function(e) {
+    if(e) e.preventDefault();
     if(!cart || cart.length === 0) return;
+    if(!db) { alert("Connecting to Cloud... please wait."); return; }
     
-    // Replace with the Store Admin's WhatsApp Phone Number (with Country Code, no + sigh)
-    // E.g., for Sri Lanka: 94771234567
-    const phoneNumber = "94701234567"; 
+    const name = document.getElementById('order-name').value;
+    const phone = document.getElementById('order-phone').value;
+    const address = document.getElementById('order-address').value;
     
-    let text = "🛍️ *New Order from ONLINE STORE*\n\n";
     let total = 0;
+    cart.forEach(i => total += (i.price * i.quantity));
     
-    cart.forEach((item, index) => {
-        const itemTotal = item.price * item.quantity;
-        total += itemTotal;
-        text += `${index + 1}. *${item.name}*\n`;
-        text += `   Price: ${formatPriceText(item.price)}\n`;
-        text += `   Quantity: ${item.quantity}\n`;
-        text += `   Total: ${formatPriceText(itemTotal)}\n\n`;
+    const orderData = {
+        id: 'ord' + Date.now(),
+        customerInfo: { name, phone, address },
+        items: cart,
+        total: total,
+        status: 'Pending',
+        timestamp: Date.now(),
+        date: new Date().toISOString().split('T')[0]
+    };
+    
+    db.collection('orders').doc(orderData.id).set(orderData).then(() => {
+        // Sync to local storeSales for backwards compatibility with existing Dashboard Analytics
+        let sales = JSON.parse(localStorage.getItem('storeSales')) || [];
+        cart.forEach(item => {
+            sales.push({
+                id: 's' + Date.now() + Math.random(),
+                date: orderData.date,
+                itemId: item.id,
+                itemName: item.name,
+                cat: 'Online',
+                qty: item.quantity,
+                amount: item.price * item.quantity,
+                customer: name,
+                timestamp: Date.now()
+            });
+        });
+        localStorage.setItem('storeSales', JSON.stringify(sales));
+        
+        cart = [];
+        localStorage.removeItem('cart');
+        renderCart();
+        updateCartBadge();
+        
+        document.getElementById('checkout-form').classList.add('hidden');
+        const showBtn = document.getElementById('show-checkout-btn');
+        if(showBtn) showBtn.style.display = 'block';
+        
+        alert(`Order Placed Successfully! We will prepare your items. Your Order ID is: ${orderData.id}`);
+        // Redirect home or order confirmation
+        window.location.href = 'index.html';
+    }).catch(err => {
+        alert("Failed to place order. Try again. " + err.message);
     });
-    
-    const finalTotal = total * 1.05; // including 5% tax
-    text += `*Subtotal:* ${formatPriceText(total)}\n`;
-    text += `*Tax (5%):* ${formatPriceText(total * 0.05)}\n`;
-    text += `*Grand Total: ${formatPriceText(finalTotal)}*\n\n`;
-    text += `Please reply to confirm my order!`;
-    
-    const encodedText = encodeURIComponent(text);
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedText}`;
-    
-    window.open(whatsappUrl, '_blank');
-}
+};
