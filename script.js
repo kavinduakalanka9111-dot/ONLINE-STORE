@@ -8,13 +8,13 @@ if (mobileMenuButton && mobileMenu) {
   });
 }
 
-function initStoreLogo() {
-    const logoData = localStorage.getItem('storeLogo');
+function initStoreLogo(firebaseLogoData = null) {
+    const logoData = firebaseLogoData || localStorage.getItem('storeLogo');
     if(logoData) {
         document.querySelectorAll('nav a').forEach(a => {
             if(a.innerText.includes('ONLINE STORE')) {
                 const iconDiv = a.querySelector('div');
-                if(iconDiv) {
+                if(iconDiv && iconDiv.id !== 'admin-logo-preview') {
                     iconDiv.innerHTML = `<img src="${logoData}" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'">`;
                     iconDiv.className = 'w-10 h-10 border-2 border-emerald-500 p-[2px] rounded-full shadow-sm bg-white flex items-center justify-center flex-shrink-0';
                 }
@@ -82,6 +82,13 @@ function loadFirebaseAndInit() {
                 renderManageProducts();
                 
                 if(typeof renderDashboard === 'function') renderDashboard();
+            });
+
+            // Sync settings (Profile Photo)
+            db.collection("settings").doc("storeProfile").onSnapshot((doc) => {
+                if(doc.exists && doc.data().logoData) {
+                    initStoreLogo(doc.data().logoData);
+                }
             });
         };
     };
@@ -454,9 +461,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 const reader = new FileReader();
                 reader.onload = function(ev) {
                     try {
-                        localStorage.setItem('storeLogo', ev.target.result);
+                        localStorage.setItem('storeLogo', ev.target.result); // local fallback
                         initStoreLogo();
-                        showToast('Store Profile Photo Updated!');
+                        
+                        // Push to Firebase Live Store Logo
+                        if(db) {
+                            db.collection("settings").doc("storeProfile").set({
+                                logoData: ev.target.result
+                            }).then(() => {
+                                showToast('Store Profile Photo Updated Live!');
+                            }).catch(err => {
+                                alert("Failed to upload Profile Photo. Image might be too large.");
+                            });
+                        } else {
+                            showToast('Updated locally (Firebase linking...)');
+                        }
                     } catch(err) {
                         alert("Image is too large to save! Please use a smaller profile picture (under 1MB).");
                     }
