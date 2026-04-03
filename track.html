@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Order - ONLINE STORE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+      tailwind.config = { theme: { extend: { colors: { brand: '#0f172a', accent: '#3b82f6' } } } }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <!-- Navbar -->
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <a href="index.html" class="text-2xl font-black tracking-tighter text-brand flex items-center gap-2">
+                    <div class="bg-accent text-white p-2 rounded-lg"><i class="fa-solid fa-store"></i></div> ONLINE STORE
+                </a>
+                <div class="hidden md:flex space-x-8 items-center bg-gray-50 px-6 py-2 rounded-full border border-gray-100">
+                    <a href="index.html" class="text-gray-500 hover:text-accent font-medium transition duration-300">Home</a>
+                    <a href="products.html" class="text-gray-500 hover:text-accent font-medium transition duration-300">Shop</a>
+                    <a href="track.html" class="text-accent font-bold transition duration-300 relative after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-0.5 after:bg-accent">Track Order</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Track Order Content -->
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20 fade-in">
+        <div class="bg-white rounded-[2.5rem] shadow-xl border border-gray-100 p-8 md:p-12 text-center">
+            <div class="w-20 h-20 bg-blue-50 text-accent rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fa-solid fa-map-location-dot text-3xl"></i>
+            </div>
+            <h1 class="text-4xl font-black text-gray-900 mb-4">Track Your Order</h1>
+            <p class="text-gray-500 mb-8 max-w-md mx-auto">Enter your Order ID below to check the real-time processing and shipping status.</p>
+            
+            <form onsubmit="window.trackMyOrder(event)" class="max-w-md mx-auto relative mb-12">
+                <input type="text" id="track-order-id" placeholder="e.g. ord1718223..." required class="w-full pl-6 pr-32 py-5 rounded-2xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-accent focus:bg-white text-lg font-bold text-gray-800 uppercase transition shadow-inner">
+                <button type="submit" class="absolute right-2 top-2 bottom-2 bg-brand hover:bg-accent text-white px-8 rounded-xl font-bold transition shadow-md flex items-center gap-2">
+                    Find <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </form>
+
+            <div id="track-result" class="hidden text-left max-w-md mx-auto mt-8 fade-in">
+                <!-- Result injected by JS -->
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

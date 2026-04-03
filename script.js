@@ -689,7 +689,8 @@ function renderDashboard() {
         });
     }
     
-    const sales = getSales();
+    const onlineSales = typeof liveWebOrdersSales !== 'undefined' ? liveWebOrdersSales : [];
+    const sales = getSales().concat(onlineSales);
     sales.sort((a,b) => b.timestamp - a.timestamp);
     
     let html = '';
@@ -706,17 +707,16 @@ function renderDashboard() {
                 <td class="p-4"><span class="font-bold text-gray-800">${s.itemName}</span> <span class="bg-blue-50 text-accent text-xs px-2 py-1 rounded-full ml-1 font-black">x${s.qty}</span></td>
                 <td class="p-4 font-black text-brand text-right">${formatPrice(s.amount)}</td>
                 <td class="p-4 text-center">
-                    <button onclick="deleteSale('${s.id}')" class="text-red-400 hover:text-red-500 hover:scale-110 transition bg-red-50 w-8 h-8 rounded-full"><i class="fa-solid fa-trash text-sm"></i></button>
+                    ${s.isWeb ? '<span class="bg-blue-100 text-blue-600 px-3 py-1 text-[10px] uppercase font-black rounded-full shadow-sm tracking-wider">Web</span>' : `<button onclick="deleteSale('${s.id}')" class="text-red-400 hover:text-red-500 hover:scale-110 transition bg-red-50 w-8 h-8 rounded-full"><i class="fa-solid fa-trash text-sm"></i></button>`}
                 </td>
             </tr>
         `;
     });
     
     tableBody.innerHTML = html || `<tr><td colspan="5" class="text-center p-10 text-gray-400 font-medium">No sales logged yet. When you receive WhatsApp orders, add them here to see your Reports!</td></tr>`;
-    
-    document.getElementById('stat-revenue').innerHTML = formatPrice(totalRevenue);
-    document.getElementById('stat-orders').innerText = sales.length;
-    document.getElementById('stat-items').innerText = totalItemsSold;
+    if(document.getElementById('stat-revenue')) document.getElementById('stat-revenue').innerHTML = formatPrice(totalRevenue);
+    if(document.getElementById('stat-orders')) document.getElementById('stat-orders').innerText = sales.length;
+    if(document.getElementById('stat-items')) document.getElementById('stat-items').innerText = totalItemsSold;
 
     renderCharts(sales);
 }
@@ -811,22 +811,6 @@ window.placeOrderFirebase = function(e) {
     };
     
     db.collection('orders').doc(orderData.id).set(orderData).then(() => {
-        // Sync to local storeSales for backwards compatibility with existing Dashboard Analytics
-        let sales = JSON.parse(localStorage.getItem('storeSales')) || [];
-        cart.forEach(item => {
-            sales.push({
-                id: 's' + Date.now() + Math.random(),
-                date: orderData.date,
-                itemId: item.id,
-                itemName: item.name,
-                cat: 'Online',
-                qty: item.quantity,
-                amount: item.price * item.quantity,
-                customer: name,
-                timestamp: Date.now()
-            });
-        });
-        localStorage.setItem('storeSales', JSON.stringify(sales));
         
         cart = [];
         localStorage.removeItem('cart');
@@ -836,11 +820,6 @@ window.placeOrderFirebase = function(e) {
         document.getElementById('checkout-form').classList.add('hidden');
         const showBtn = document.getElementById('show-checkout-btn');
         if(showBtn) showBtn.style.display = 'block';
-        
-        cart = [];
-        localStorage.removeItem('cart');
-        
-        alert(`Order Placed Successfully! Please click OK to send us the confirmation on WhatsApp!`);
         
         let woText = `🛍️ *New Web Order [${orderData.id}]*\n\n`;
         woText += `*Customer:* ${name}\n`;
@@ -852,13 +831,302 @@ window.placeOrderFirebase = function(e) {
         orderData.items.forEach((i, idx) => {
              woText += `${idx+1}. ${i.name} (x${i.quantity}) - ${formatPriceText(i.price * i.quantity)}\n`;
         });
-        woText += `\n*Total Amount:* ${formatPriceText(total)}\n\n`;
-        woText += `Please process my order. Thank you!`;
+        woText += `\n*Total Amount:* ${formatPriceText(total)}\n`;
         
-        const encoded = encodeURIComponent(woText);
-        window.location.href = `https://wa.me/94782809538?text=${encoded}`;
+        // --- Telegram Bot API Setup ---
+        // 1. Send /newbot to @BotFather in Telegram to get a Bot Token.
+        // 2. Search @userinfobot in Telegram and send /start to get your Chat ID.
+        // 3. Paste them below! 
+        const myTelegramBotToken = "8735257553:AAEpMz1WRcHqF9B8k3iGuukHmcqKxpnq5FY"; 
+        const myTelegramChatId = "7953753933";    
+        
+        if (myTelegramBotToken !== "YOUR_TELEGRAM_BOT_TOKEN") {
+             const tgUrl = `https://api.telegram.org/bot${myTelegramBotToken}/sendMessage`;
+             fetch(tgUrl, {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({
+                     chat_id: myTelegramChatId,
+                     text: woText,
+                     parse_mode: 'Markdown'
+                 })
+             }).catch(e => console.log('Telegram error:', e));
+        } else {
+             console.log("Telegram setup pending. Order saved to DB.");
+        }
+        
+        showSuccessModal(orderData.id);
+
         
     }).catch(err => {
         alert("Failed to place order. Try again. " + err.message);
     });
 };
+
+// --- Custom Checkout Success Modal ---
+function showSuccessModal(orderId) {
+    const overlay = document.createElement('div');
+    overlay.className = "fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-500 px-4";
+    
+    overlay.innerHTML = `
+        <div class="bg-white rounded-[2rem] p-8 md:p-12 shadow-2xl max-w-lg w-full text-center transform scale-90 transition-transform duration-500" id="success-modal-content">
+            <div class="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner shrink-0">
+                <i class="fa-solid fa-check text-5xl text-emerald-500 animate-bounce"></i>
+            </div>
+            <h2 class="text-3xl font-black text-gray-900 mb-2">Order Confirmed!</h2>
+            <p class="text-gray-500 mb-6 text-lg">Thank you! Your order has been placed successfully.</p>
+            <div class="bg-gray-50 rounded-xl p-4 mb-8 border border-gray-100 shadow-inner">
+                <div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Your Order ID</div>
+                <div class="text-2xl font-black text-accent tracking-wider select-all">${orderId}</div>
+            </div>
+            <p class="text-sm text-gray-400 mb-8 px-4">We have automatically received your order via our system. You can track your processing status using your Order ID.</p>
+            <button onclick="this.closest('.fixed').remove(); window.location.href='index.html';" class="w-full bg-brand hover:bg-accent text-white py-4 rounded-xl font-bold text-lg transition duration-300 shadow-xl flex justify-center items-center gap-2 transform hover:-translate-y-1">
+                Continue Shopping <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    setTimeout(() => {
+        overlay.classList.remove('opacity-0');
+        document.getElementById('success-modal-content').classList.remove('scale-90');
+    }, 10);
+}
+
+// --- Admin Order Management ---
+let liveWebOrdersSales = [];
+
+function renderAdminOrders() {
+    if(!document.getElementById('online-orders-tbody')) return;
+    
+    if(!db) return;
+    
+    db.collection('orders').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
+        let html = '';
+        let pendingCnt = 0;
+        let shippedCnt = 0;
+        
+        liveWebOrdersSales = [];
+        
+        if (snapshot.empty) {
+            document.getElementById('online-orders-tbody').innerHTML = `<tr><td colspan="6" class="p-8 text-center text-gray-400 font-medium">No online orders yet.</td></tr>`;
+            if(typeof renderDashboard === 'function') renderDashboard();
+            return;
+        }
+
+        snapshot.forEach(doc => {
+            const order = doc.data();
+            const id = doc.id;
+            
+            if (order.status === 'Pending') pendingCnt++;
+            if (order.status === 'Shipped') shippedCnt++;
+            
+            // Map items for the unified charts/reports
+            if(order.items && order.items.length > 0) {
+                 order.items.forEach(item => {
+                     let productMeta = getProducts().find(p => p.id === item.id);
+                     liveWebOrdersSales.push({
+                         id: 'web_' + id + '_' + item.id,
+                         isWeb: true,
+                         date: order.date,
+                         itemId: item.id,
+                         itemName: item.name,
+                         cat: productMeta ? productMeta.cat : 'Online',
+                         qty: item.quantity,
+                         amount: item.price * item.quantity,
+                         customer: order.customerInfo.name,
+                         timestamp: order.timestamp
+                     });
+                 });
+            }
+            
+            let statusBadge = '';
+            if (order.status === 'Pending') statusBadge = `<span class="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">Pending</span>`;
+            else if (order.status === 'Shipped') statusBadge = `<span class="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">Shipped</span>`;
+            else statusBadge = `<span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">${order.status}</span>`;
+
+            html += `
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
+                <td class="p-4 font-bold text-xs text-brand tracking-widest uppercase">
+                    ${id}<br><span class="text-gray-400 font-normal mt-1 block">${order.date}</span>
+                </td>
+                <td class="p-4">
+                    <div class="font-bold text-gray-800">${order.customerInfo.name}</div>
+                    <div class="text-sm text-gray-500">${order.customerInfo.phone}</div>
+                </td>
+                <td class="p-4">
+                    <div class="text-sm font-medium text-gray-700">${order.customerInfo.town}, ${order.customerInfo.district}</div>
+                    <div class="text-xs text-gray-400 line-clamp-1" title="${order.customerInfo.address}">${order.customerInfo.address}</div>
+                </td>
+                <td class="p-4">
+                    <select onchange="updateOrderStatus('${id}', this.value)" class="bg-white border border-gray-200 rounded-lg px-2 py-1 text-sm font-bold focus:outline-none cursor-pointer">
+                        <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option value="Shipped" ${order.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                        <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                    </select>
+                </td>
+                <td class="p-4 font-black text-brand text-right">${formatPrice(order.total)}</td>
+                <td class="p-4 text-center">
+                    <button onclick="viewOrderDetails('${id}')" class="text-accent hover:text-blue-700 hover:scale-110 transition bg-blue-50 w-8 h-8 rounded-full"><i class="fa-solid fa-eye text-sm"></i></button>
+                    <button onclick="deleteOrder('${id}')" class="text-red-400 hover:text-red-500 hover:scale-110 transition bg-red-50 w-8 h-8 rounded-full ml-1"><i class="fa-solid fa-trash text-sm"></i></button>
+                </td>
+            </tr>
+            `;
+        });
+        
+        document.getElementById('online-orders-tbody').innerHTML = html;
+        if(document.getElementById('pending-orders-count')) document.getElementById('pending-orders-count').innerText = pendingCnt;
+        if(document.getElementById('shipped-orders-count')) document.getElementById('shipped-orders-count').innerText = shippedCnt;
+        
+        // Auto Update Dashboard UI
+        if(typeof renderDashboard === 'function') renderDashboard();
+    });
+}
+
+function updateOrderStatus(id, newStatus) {
+    if(!db) return;
+    db.collection('orders').doc(id).update({
+        status: newStatus
+    }).then(() => {
+        showToast(`Order status updated to ${newStatus}`);
+    });
+}
+
+function deleteOrder(id) {
+    if(confirm('Are you sure you want to permanently delete this web order?')) {
+        db.collection('orders').doc(id).delete().then(() => showToast('Order Deleted'));
+    }
+}
+
+function viewOrderDetails(id) {
+    db.collection('orders').doc(id).get().then(doc => {
+        if(!doc.exists) return;
+        const o = doc.data();
+        let itemsHtml = o.items.map(i => `<div class="flex justify-between border-b border-gray-100 py-2"><span class="font-medium">${i.name} (x${i.quantity})</span> <span class="font-bold text-accent">${formatPriceText(i.price * i.quantity)}</span></div>`).join('');
+        
+        const overlay = document.createElement('div');
+        overlay.className = "fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300 px-4";
+        overlay.innerHTML = `
+            <div class="bg-white rounded-3xl p-8 max-w-2xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
+                <button onclick="this.closest('.fixed').remove()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
+                <h2 class="text-2xl font-black text-gray-900 mb-6 border-b pb-4">Order Details <span class="text-accent text-sm ml-2">#${o.id}</span></h2>
+                
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Customer Info</h3>
+                        <p class="font-bold text-gray-800">${o.customerInfo.name}</p>
+                        <p class="text-sm text-gray-600">${o.customerInfo.phone}</p>
+                        ${o.customerInfo.phoneOpt ? `<p class="text-xs text-gray-500">${o.customerInfo.phoneOpt}</p>` : ''}
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Delivery Address</h3>
+                        <p class="text-sm text-gray-700">${o.customerInfo.address}</p>
+                        <p class="text-sm text-gray-700">${o.customerInfo.town}, ${o.customerInfo.district}</p>
+                        <p class="text-sm text-gray-700">${o.customerInfo.country}</p>
+                    </div>
+                </div>
+                
+                ${o.preferences ? `
+                <div class="bg-yellow-50 p-4 rounded-xl mb-6">
+                    <h3 class="text-xs font-bold text-yellow-600 uppercase tracking-wide mb-1">Customer Preferences / Notes</h3>
+                    <p class="text-sm text-yellow-800">${o.preferences}</p>
+                </div>
+                ` : ''}
+                
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Ordered Items</h3>
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                        ${itemsHtml}
+                        <div class="flex justify-between pt-4 mt-2 border-t border-gray-200">
+                            <span class="font-black text-gray-800 text-lg">Total</span>
+                            <span class="font-black text-brand text-xl">${formatPrice(o.total)}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+    });
+}
+
+// --- Order Tracking Logic (Customer Side) ---
+window.trackMyOrder = function(e) {
+    e.preventDefault();
+    const orderId = document.getElementById('track-order-id').value.trim();
+    if(!orderId) {
+        alert("Please enter a valid Order ID");
+        return;
+    }
+    
+    const resultDiv = document.getElementById('track-result');
+    resultDiv.innerHTML = `<div class="text-center py-4 text-gray-500"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>Searching...</div>`;
+    resultDiv.classList.remove('hidden');
+    
+    if(!db) { resultDiv.innerHTML = `<div class="text-red-500 text-center font-bold">Database not connected.</div>`; return; }
+    
+    db.collection('orders').doc(orderId).get().then(doc => {
+        if(!doc.exists) {
+            resultDiv.innerHTML = `
+                <div class="bg-red-50 text-red-600 p-4 rounded-xl text-center border border-red-100">
+                    <i class="fa-solid fa-circle-exclamation text-xl mb-2 block"></i>
+                    <span class="font-bold">Order Not Found</span><br><span class="text-sm">Please check your Order ID and try again.</span>
+                </div>
+            `;
+            return;
+        }
+        const o = doc.data();
+        let statusColor = "gray-500";
+        let statusIcon = "fa-clock";
+        if(o.status === "Pending") { statusColor = "orange-500"; statusIcon = "fa-hourglass-half"; }
+        if(o.status === "Shipped") { statusColor = "emerald-500"; statusIcon = "fa-truck-fast"; }
+        
+        resultDiv.innerHTML = `
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+                    <div>
+                        <div class="text-xs text-gray-400 font-bold uppercase tracking-widest">Order ID</div>
+                        <div class="font-black text-gray-800 text-lg">${o.id}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs text-gray-400 font-bold uppercase tracking-widest">Date</div>
+                        <div class="font-medium text-gray-600">${o.date}</div>
+                    </div>
+                </div>
+                
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 rounded-full bg-${statusColor.split('-')[0]}-100 flex items-center justify-center mx-auto mb-3 shadow-inner">
+                        <i class="fa-solid ${statusIcon} text-2xl text-${statusColor}"></i>
+                    </div>
+                    <div class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">Current Status</div>
+                    <div class="text-3xl font-black text-${statusColor} uppercase tracking-widest">${o.status}</div>
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm text-gray-500 font-medium">Customer</span>
+                        <span class="text-sm font-bold text-gray-800">${o.customerInfo.name}</span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm text-gray-500 font-medium">Items</span>
+                        <span class="text-sm font-bold text-gray-800">${o.items.length} items</span>
+                    </div>
+                    <div class="flex justify-between pt-2 border-t border-gray-200">
+                        <span class="text-sm text-gray-500 font-medium">Total Amount</span>
+                        <span class="font-black text-brand">${formatPriceText(o.total)}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).catch(err => {
+        resultDiv.innerHTML = `<div class="text-red-500 text-center font-bold">Error looking up order. Please try again.</div>`;
+    });
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Already defined in previous block, so we check if renderAdminOrders is needed
+    if(document.getElementById('online-orders-tbody')) {
+        renderAdminOrders();
+    }
+});

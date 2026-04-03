@@ -23,6 +23,7 @@
                 <div class="hidden md:flex space-x-8 items-center bg-gray-50 px-6 py-2 rounded-full border border-gray-100">
                     <a href="index.html" class="text-gray-500 hover:text-accent font-medium transition duration-300">Home</a>
                     <a href="products.html" class="text-gray-500 hover:text-accent font-medium transition duration-300">Shop</a>
+                    <a href="track.html" class="text-gray-500 hover:text-emerald-500 font-medium transition duration-300">Track Order</a>
                     <a href="manage.html" class="text-gray-500 hover:text-admin font-bold transition duration-300"><i class="fa-solid fa-gear"></i> Manage Items</a>
                     <a href="dashboard.html" class="text-report font-bold transition duration-300 relative after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-0.5 after:bg-report"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
                 </div>
@@ -40,19 +41,52 @@
             </div>
             <!-- Quick Stats -->
             <div class="flex gap-4 w-full sm:w-auto">
-                <div class="bg-white px-6 py-4 rounded-3xl shadow-sm border border-gray-100 flex-1 sm:flex-none">
-                    <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total Revenue</div>
-                    <div class="text-2xl font-black text-emerald-500" id="stat-revenue">LKR 0.00</div>
+                <div class="bg-white px-4 py-3 rounded-2xl shadow-sm border border-gray-100 flex-1 sm:flex-none">
+                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Revenue</div>
+                    <div class="text-xl font-black text-emerald-500" id="stat-revenue">LKR 0.00</div>
                 </div>
-                <div class="bg-white px-6 py-4 rounded-3xl shadow-sm border border-gray-100 flex-1 sm:flex-none">
-                    <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total Orders</div>
-                    <div class="text-2xl font-black text-report" id="stat-orders">0</div>
+                <!-- Web specific stats -->
+                <div class="bg-orange-50 px-4 py-3 rounded-2xl shadow-sm border border-orange-100 flex-1 sm:flex-none">
+                    <div class="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-1">Web Pending</div>
+                    <div class="text-xl font-black text-orange-500" id="pending-orders-count">0</div>
                 </div>
-                <div class="bg-white px-6 py-4 rounded-3xl shadow-sm border border-gray-100 flex-1 sm:flex-none">
-                    <div class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Items Sold</div>
-                    <div class="text-2xl font-black text-accent" id="stat-items">0</div>
+                <div class="bg-emerald-50 px-4 py-3 rounded-2xl shadow-sm border border-emerald-100 flex-1 sm:flex-none">
+                    <div class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Web Shipped</div>
+                    <div class="text-xl font-black text-emerald-500" id="shipped-orders-count">0</div>
                 </div>
             </div>
+        </div>
+
+        <!-- Web Orders Management Table -->
+        <div class="bg-white rounded-3xl shadow-sm border border-brand p-8 mb-10 overflow-hidden relative">
+            <div class="absolute top-0 right-0 bg-brand text-white text-xs font-black px-4 py-1 rounded-bl-xl shadow-md uppercase tracking-widest">LIVE DATA</div>
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-2xl font-black text-gray-900 flex items-center gap-3"><i class="fa-solid fa-globe text-brand"></i> Live Web Orders</h3>
+                    <p class="text-gray-500 text-sm mt-1">Manage orders directly originating from your online store.</p>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[800px]">
+                    <thead>
+                        <tr class="bg-gray-50 border-b border-gray-100 text-gray-400 text-xs uppercase tracking-widest">
+                            <th class="p-4 rounded-tl-xl">Order ID & Date</th>
+                            <th class="p-4">Customer</th>
+                            <th class="p-4">Location</th>
+                            <th class="p-4">Status Update</th>
+                            <th class="p-4 text-right">Total</th>
+                            <th class="p-4 text-center rounded-tr-xl">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="online-orders-tbody">
+                        <tr><td colspan="6" class="p-8 text-center text-gray-300 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading Web Orders...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h2 class="text-2xl font-black text-gray-800"><i class="fa-solid fa-cash-register text-gray-400 mr-2"></i> Offline Sales Logging & Analytics</h2>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
