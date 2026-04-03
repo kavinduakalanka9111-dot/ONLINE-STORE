@@ -3,16 +3,16 @@ const mobileMenuButton = document.getElementById('mobile-menu-btn');
 const mobileMenu = document.getElementById('mobile-menu');
 
 if (mobileMenuButton && mobileMenu) {
-  mobileMenuButton.addEventListener('click', () => {
-    mobileMenu.classList.toggle('hidden');
-  });
+    mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
 }
 
 // --- Price Formatter Helper ---
 const USD_RATE = 300;
 function formatPrice(lkrAmt) {
     const usd = Number(lkrAmt) / USD_RATE;
-    return `LKR ${Number(lkrAmt).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} <span class="text-sm font-bold text-gray-500 ml-1">($${usd.toFixed(2)})</span>`;
+    return `LKR ${Number(lkrAmt).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span class="text-sm font-bold text-gray-500 ml-1">($${usd.toFixed(2)})</span>`;
 }
 function formatPriceText(lkrAmt) {
     return `LKR ${Number(lkrAmt).toFixed(2)} ($${(Number(lkrAmt) / USD_RATE).toFixed(2)})`;
@@ -20,11 +20,11 @@ function formatPriceText(lkrAmt) {
 
 function initStoreLogo(firebaseLogoData = null) {
     const logoData = firebaseLogoData || localStorage.getItem('storeLogo');
-    if(logoData) {
+    if (logoData) {
         document.querySelectorAll('nav a').forEach(a => {
-            if(a.innerText.includes('ONLINE STORE')) {
+            if (a.innerText.includes('ONLINE STORE')) {
                 const iconDiv = a.querySelector('div');
-                if(iconDiv && iconDiv.id !== 'admin-logo-preview') {
+                if (iconDiv && iconDiv.id !== 'admin-logo-preview') {
                     iconDiv.innerHTML = `<img src="${logoData}" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'">`;
                     iconDiv.className = 'w-10 h-10 border-2 border-emerald-500 p-[2px] rounded-full shadow-sm bg-white flex items-center justify-center flex-shrink-0';
                 }
@@ -32,7 +32,7 @@ function initStoreLogo(firebaseLogoData = null) {
         });
     }
     const preview = document.getElementById('admin-logo-preview');
-    if(preview && logoData) {
+    if (preview && logoData) {
         preview.innerHTML = `<img src="${logoData}" class="w-full h-full object-cover">`;
     }
 }
@@ -41,61 +41,61 @@ function initStoreLogo(firebaseLogoData = null) {
 let storeProducts = []; // Memory cache
 
 const defaultProducts = [
-    {id: 'p1', name: 'Premium Cotton Shirt', cat: 'Clothing', price: 29.99, img: 'https://images.unsplash.com/photo-1596755094514-f87e32f85e2c?w=500', sale: false, desc: 'A comfortable and breathable cotton shirt suitable for any casual occasion.', sizes: ['M', 'L', 'XL'], colors: 'White, Blue'},
-    {id: 'p2', name: 'Sony Wireless Headphones', cat: 'Electronics', price: 89.99, img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500', sale: false, desc: 'Noise-cancelling wireless headphones with 30-hour battery life.'},
-    {id: 'p3', name: 'Luxury Analog Watch', cat: 'Watches', price: 149.99, img: 'https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=500', sale: true, desc: 'Premium crafted analog watch showcasing timeless elegance and precision engineering.'},
-    {id: 'p4', name: 'Jumbo Plush Teddy', cat: 'Toys', price: 34.99, img: 'https://images.unsplash.com/photo-1570458436416-b8eecfcbf1e3?w=500', sale: false, desc: 'Incredibly soft and huggable giant teddy bear.'},
-    {id: 'p5', name: 'Minimalist Desk Clock', cat: 'Household', price: 45.00, img: 'https://images.unsplash.com/photo-1563861826100-9cb868fdbe1c?w=500', sale: false, desc: 'A sleek, modern desk clock designed to complement contemporary workspaces.'},
-    {id: 'p6', name: 'Modern Smartphone', cat: 'Electronics', price: 799.99, img: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500', sale: false, desc: 'Next-generation smartphone with pro-grade camera and stunning display features.'},
-    {id: 'p7', name: 'Elegant Sommer Dress', cat: 'Clothing', price: 59.99, img: 'https://images.unsplash.com/photo-1612336307429-8a898d10e223?w=500', sale: false, desc: 'Lightweight and flowy dress, perfect for warm summer days.', sizes: ['S', 'M'], colors: 'Red, Yellow'},
-    {id: 'p8', name: 'Ceramic Coffee Mug', cat: 'Household', price: 14.50, img: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=500', sale: true, desc: 'Handcrafted ceramic mug that keeps your coffee warm longer.'}
+    { id: 'p1', name: 'Premium Cotton Shirt', cat: 'Clothing', price: 29.99, img: 'https://images.unsplash.com/photo-1596755094514-f87e32f85e2c?w=500', sale: false, desc: 'A comfortable and breathable cotton shirt suitable for any casual occasion.', sizes: ['M', 'L', 'XL'], colors: 'White, Blue' },
+    { id: 'p2', name: 'Sony Wireless Headphones', cat: 'Electronics', price: 89.99, img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500', sale: false, desc: 'Noise-cancelling wireless headphones with 30-hour battery life.' },
+    { id: 'p3', name: 'Luxury Analog Watch', cat: 'Watches', price: 149.99, img: 'https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=500', sale: true, desc: 'Premium crafted analog watch showcasing timeless elegance and precision engineering.' },
+    { id: 'p4', name: 'Jumbo Plush Teddy', cat: 'Toys', price: 34.99, img: 'https://images.unsplash.com/photo-1570458436416-b8eecfcbf1e3?w=500', sale: false, desc: 'Incredibly soft and huggable giant teddy bear.' },
+    { id: 'p5', name: 'Minimalist Desk Clock', cat: 'Household', price: 45.00, img: 'https://images.unsplash.com/photo-1563861826100-9cb868fdbe1c?w=500', sale: false, desc: 'A sleek, modern desk clock designed to complement contemporary workspaces.' },
+    { id: 'p6', name: 'Modern Smartphone', cat: 'Electronics', price: 799.99, img: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500', sale: false, desc: 'Next-generation smartphone with pro-grade camera and stunning display features.' },
+    { id: 'p7', name: 'Elegant Sommer Dress', cat: 'Clothing', price: 59.99, img: 'https://images.unsplash.com/photo-1612336307429-8a898d10e223?w=500', sale: false, desc: 'Lightweight and flowy dress, perfect for warm summer days.', sizes: ['S', 'M'], colors: 'Red, Yellow' },
+    { id: 'p8', name: 'Ceramic Coffee Mug', cat: 'Household', price: 14.50, img: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=500', sale: true, desc: 'Handcrafted ceramic mug that keeps your coffee warm longer.' }
 ];
 
 let db = null;
 const firebaseConfig = {
-  apiKey: "AIzaSyBfgj5yDZSmF7JpQWELknKWc3z0CW9Re4E",
-  authDomain: "online-store-30b44.firebaseapp.com",
-  projectId: "online-store-30b44",
-  storageBucket: "online-store-30b44.firebasestorage.app",
-  messagingSenderId: "233184633801",
-  appId: "1:233184633801:web:4dd0f3ca24f5dbc8ac3e18"
+    apiKey: "AIzaSyBfgj5yDZSmF7JpQWELknKWc3z0CW9Re4E",
+    authDomain: "online-store-30b44.firebaseapp.com",
+    projectId: "online-store-30b44",
+    storageBucket: "online-store-30b44.firebasestorage.app",
+    messagingSenderId: "233184633801",
+    appId: "1:233184633801:web:4dd0f3ca24f5dbc8ac3e18"
 };
 
 function loadFirebaseAndInit() {
     const fsApp = document.createElement('script');
     fsApp.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js";
     document.head.appendChild(fsApp);
-    
+
     fsApp.onload = () => {
         const fsDb = document.createElement('script');
         fsDb.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js";
         document.head.appendChild(fsDb);
-        
+
         fsDb.onload = () => {
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
-            
+
             // Sync products from firestore instead of localStorage
             db.collection("products").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
                 storeProducts = [];
                 snapshot.forEach((doc) => {
                     storeProducts.push({ id: doc.id, ...doc.data() });
                 });
-                
+
                 // If empty, the store will now correctly show as empty instead of locking default items
                 // Removed defaultProducts fallback
-                
+
                 // Re-render UI elements automatically when DB changes
                 renderProductsToContainer('all-products-container');
                 renderProductsToContainer('featured-products-container', 4);
                 renderManageProducts();
-                
-                if(typeof renderDashboard === 'function') renderDashboard();
+
+                if (typeof renderDashboard === 'function') renderDashboard();
             });
 
             // Sync settings (Profile Photo)
             db.collection("settings").doc("storeProfile").onSnapshot((doc) => {
-                if(doc.exists && doc.data().logoData) {
+                if (doc.exists && doc.data().logoData) {
                     initStoreLogo(doc.data().logoData);
                 }
             });
@@ -142,9 +142,9 @@ function compressImageWebP(file) {
 
 function renderImagePreviews() {
     const grid = document.getElementById('preview-grid');
-    if(!grid) return;
+    if (!grid) return;
     grid.innerHTML = '';
-    
+
     uploadedImages.forEach((b64, index) => {
         const isCover = index === selectedCoverIndex;
         grid.innerHTML += `
@@ -155,25 +155,25 @@ function renderImagePreviews() {
     });
 }
 
-window.handleImageFilesSelection = function(e) {
+window.handleImageFilesSelection = function (e) {
     const files = Array.from(e.target.files);
-    if(files.length === 0) return;
-    
-    if(files.length > 10) {
+    if (files.length === 0) return;
+
+    if (files.length > 10) {
         alert("Please select up to 10 images max.");
         return;
     }
-    
+
     const previewContainer = document.getElementById('image-previews-container');
     const grid = document.getElementById('preview-grid');
-    if(!previewContainer || !grid) return;
-    
+    if (!previewContainer || !grid) return;
+
     previewContainer.classList.remove('hidden');
     grid.innerHTML = '<div class="text-sm text-gray-500 py-4 font-bold">Compressing images... Please wait.</div>';
-    
+
     uploadedImages = [];
     selectedCoverIndex = 0;
-    
+
     Promise.all(files.map(f => compressImageWebP(f))).then(base64Arr => {
         uploadedImages = base64Arr;
         renderImagePreviews();
@@ -183,71 +183,71 @@ window.handleImageFilesSelection = function(e) {
 // Save logic handling both Device File and URL into Firebase
 function addProduct(event) {
     event.preventDefault();
-    if(!db) {
+    if (!db) {
         alert("Firebase is connecting... Please wait a second and try again.");
         return;
     }
-    
-        const name = document.getElementById('item-name').value;
-        const cat = document.getElementById('item-cat').value;
-        const price = document.getElementById('item-price').value;
-        const sale = document.getElementById('item-sale')?.checked;
-        const desc = document.getElementById('item-desc')?.value.trim() || '';
-        
-        let sizes = [];
-        let colors = '';
-        if(cat === 'Clothing') {
-            document.querySelectorAll('.size-cb:checked').forEach(cb => sizes.push(cb.value));
-            colors = document.getElementById('item-colors')?.value.trim() || '';
-        }
-        
-        const id = 'p' + Date.now(); 
-        
-        let finalImages = [];
-        let finalCover = '';
-        
-        const urlInput = document.getElementById('item-img-url');
-        
-        if (uploadedImages.length > 0) {
-            finalImages = uploadedImages;
-            finalCover = uploadedImages[selectedCoverIndex] || uploadedImages[0];
-        } else if (urlInput && urlInput.value) {
-            finalImages = urlInput.value.split(',').map(u => u.trim()).filter(u => u);
-            finalCover = finalImages[0] || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500';
-        } else {
-            finalImages = ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500'];
-            finalCover = finalImages[0];
-        }
-        
-        // Estimate total payload size
-        const totalSize = JSON.stringify(finalImages).length;
-        if(totalSize > 950000) {
-            alert("Images are too large! Try uploading slightly fewer photos to stay under Database storage limits.");
-            return;
-        }
-        
-        const docData = { name, cat, price: parseFloat(price), img: finalCover, images: finalImages, sale, desc, sizes, colors, timestamp: Date.now() };
-        
-        // Push to Firebase directly
-        db.collection("products").doc(id).set(docData).then(() => {
-            showToast('Item successfully published to Live Store!');
-            document.getElementById('add-item-form').reset();
-            const clothDiv = document.getElementById('clothing-options');
-            if(clothDiv) clothDiv.style.display = 'block';
-            
-            // Reset image states
-            uploadedImages = [];
-            const prevCont = document.getElementById('image-previews-container');
-            if(prevCont) prevCont.classList.add('hidden');
-        }).catch(e => {
-            console.error(e);
-            alert("Upload Failed! Check your internet connection.");
-        });
+
+    const name = document.getElementById('item-name').value;
+    const cat = document.getElementById('item-cat').value;
+    const price = document.getElementById('item-price').value;
+    const sale = document.getElementById('item-sale')?.checked;
+    const desc = document.getElementById('item-desc')?.value.trim() || '';
+
+    let sizes = [];
+    let colors = '';
+    if (cat === 'Clothing') {
+        document.querySelectorAll('.size-cb:checked').forEach(cb => sizes.push(cb.value));
+        colors = document.getElementById('item-colors')?.value.trim() || '';
+    }
+
+    const id = 'p' + Date.now();
+
+    let finalImages = [];
+    let finalCover = '';
+
+    const urlInput = document.getElementById('item-img-url');
+
+    if (uploadedImages.length > 0) {
+        finalImages = uploadedImages;
+        finalCover = uploadedImages[selectedCoverIndex] || uploadedImages[0];
+    } else if (urlInput && urlInput.value) {
+        finalImages = urlInput.value.split(',').map(u => u.trim()).filter(u => u);
+        finalCover = finalImages[0] || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500';
+    } else {
+        finalImages = ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500'];
+        finalCover = finalImages[0];
+    }
+
+    // Estimate total payload size
+    const totalSize = JSON.stringify(finalImages).length;
+    if (totalSize > 950000) {
+        alert("Images are too large! Try uploading slightly fewer photos to stay under Database storage limits.");
+        return;
+    }
+
+    const docData = { name, cat, price: parseFloat(price), img: finalCover, images: finalImages, sale, desc, sizes, colors, timestamp: Date.now() };
+
+    // Push to Firebase directly
+    db.collection("products").doc(id).set(docData).then(() => {
+        showToast('Item successfully published to Live Store!');
+        document.getElementById('add-item-form').reset();
+        const clothDiv = document.getElementById('clothing-options');
+        if (clothDiv) clothDiv.style.display = 'block';
+
+        // Reset image states
+        uploadedImages = [];
+        const prevCont = document.getElementById('image-previews-container');
+        if (prevCont) prevCont.classList.add('hidden');
+    }).catch(e => {
+        console.error(e);
+        alert("Upload Failed! Check your internet connection.");
+    });
 }
 
 function deleteProduct(id) {
-    if(!db) return;
-    if(confirm("Are you sure you want to delete this item completely from the live database?")) {
+    if (!db) return;
+    if (confirm("Are you sure you want to delete this item completely from the live database?")) {
         db.collection("products").doc(id).delete().then(() => {
             showToast('Item deleted successfully from Live Store!');
         });
@@ -257,16 +257,16 @@ function deleteProduct(id) {
 // Modal view logic
 function showProductModal(id) {
     let p = getProducts().find(prod => prod.id === id);
-    if(!p) return;
-    
+    if (!p) return;
+
     let modal = document.getElementById('product-modal');
-    if(!modal) {
+    if (!modal) {
         modal = document.createElement('div');
         modal.id = 'product-modal';
         modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition duration-500';
         document.body.appendChild(modal);
     }
-    
+
     // Badges array for sizes
     let sizesHtml = '';
     if (p.sizes && p.sizes.length > 0) {
@@ -278,12 +278,12 @@ function showProductModal(id) {
                 </div>
             </div>`;
     }
-    
+
     let colorsHtml = '';
     if (p.colors) {
-        let cols = p.colors.split(',').filter(c=>c.trim());
-        if(cols.length > 0) {
-             colorsHtml = `
+        let cols = p.colors.split(',').filter(c => c.trim());
+        if (cols.length > 0) {
+            colorsHtml = `
                 <div class="mb-5">
                     <h4 class="font-bold text-gray-700 mb-2 uppercase text-xs tracking-widest">Available Colors</h4>
                     <div class="flex flex-wrap gap-2">
@@ -292,12 +292,12 @@ function showProductModal(id) {
                 </div>`;
         }
     }
-    
+
     const safeName = p.name.replace(/'/g, "\\'");
-    
+
     let carouselHtml = '';
     const imagesToDisplay = (p.images && p.images.length > 0) ? p.images : [p.img];
-    
+
     if (imagesToDisplay.length === 1) {
         carouselHtml = `<img src="${imagesToDisplay[0]}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/500'">`;
     } else {
@@ -355,7 +355,7 @@ function showProductModal(id) {
             </div>
         </div>
     `;
-    
+
     modal.classList.remove('opacity-0', 'pointer-events-none');
     setTimeout(() => {
         document.getElementById('modal-content').classList.remove('scale-95');
@@ -364,7 +364,7 @@ function showProductModal(id) {
 
 function closeProductModal() {
     const modal = document.getElementById('product-modal');
-    if(modal) {
+    if (modal) {
         document.getElementById('modal-content').classList.add('scale-95');
         modal.classList.add('opacity-0', 'pointer-events-none');
     }
@@ -374,15 +374,15 @@ function closeProductModal() {
 function renderProductsToContainer(containerId, maxItems = null) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    
+
     const products = getProducts();
     let displayProducts = maxItems ? products.slice(0, maxItems) : products;
-    
+
     if (displayProducts.length === 0) {
         container.innerHTML = `<div class="col-span-full text-center py-16 bg-white rounded-3xl border border-gray-100 shadow-sm"><i class="fa-solid fa-box-open text-7xl text-gray-200 mb-6 block"></i><p class="text-gray-500 font-medium text-xl">Inventory empty. <br><a href="manage.html" class="inline-block mt-4 bg-accent text-white px-8 py-3 rounded-full hover:bg-blue-600 transition shadow-lg">Manage Items</a></p></div>`;
         return;
     }
-    
+
     let html = '';
     displayProducts.forEach(p => {
         html += `
@@ -416,15 +416,15 @@ function renderProductsToContainer(containerId, maxItems = null) {
 // Admin / Manage Page specific
 function renderManageProducts() {
     const tbody = document.getElementById('manage-products-tbody');
-    if(!tbody) return;
-    
+    if (!tbody) return;
+
     const products = getProducts();
     let html = '';
     products.forEach(p => {
         let extraTags = '';
-        if(p.sizes && p.sizes.length > 0) extraTags += `<span class="bg-gray-100 border border-gray-200 text-gray-600 text-xs px-2 py-1 rounded ml-1 font-bold">Sizes: ${p.sizes.join(', ')}</span>`;
-        if(p.colors) extraTags += `<span class="bg-gray-100 border border-gray-200 text-gray-600 text-xs px-2 py-1 rounded ml-1 font-bold">Colors: ${p.colors.split(',').length}</span>`;
-        
+        if (p.sizes && p.sizes.length > 0) extraTags += `<span class="bg-gray-100 border border-gray-200 text-gray-600 text-xs px-2 py-1 rounded ml-1 font-bold">Sizes: ${p.sizes.join(', ')}</span>`;
+        if (p.colors) extraTags += `<span class="bg-gray-100 border border-gray-200 text-gray-600 text-xs px-2 py-1 rounded ml-1 font-bold">Colors: ${p.colors.split(',').length}</span>`;
+
         html += `
             <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
                 <td class="p-4 flex justify-center"><img src="${p.img}" class="w-16 h-16 rounded-xl shadow-sm object-cover border border-gray-200" onerror="this.src='https://via.placeholder.com/150'"></td>
@@ -450,67 +450,67 @@ function renderManageProducts() {
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
 function updateCartBadge() {
-  const badges = document.querySelectorAll('.cart-badge');
-  const count = cart.reduce((total, item) => total + item.quantity, 0);
-  badges.forEach(badge => {
-    badge.innerText = count;
-    badge.style.display = count > 0 ? 'flex' : 'none';
-  });
+    const badges = document.querySelectorAll('.cart-badge');
+    const count = cart.reduce((total, item) => total + item.quantity, 0);
+    badges.forEach(badge => {
+        badge.innerText = count;
+        badge.style.display = count > 0 ? 'flex' : 'none';
+    });
 }
 
 function addToCart(id, name, price, image) {
-  const existing = cart.find(item => item.id === id);
-  if (existing) {
-    existing.quantity += 1;
-  } else {
-    cart.push({ id, name, price, image, quantity: 1 });
-  }
-  localStorage.setItem('cart', JSON.stringify(cart));
-  updateCartBadge();
-  showToast(`Added ${name} to cart!`);
+    const existing = cart.find(item => item.id === id);
+    if (existing) {
+        existing.quantity += 1;
+    } else {
+        cart.push({ id, name, price, image, quantity: 1 });
+    }
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartBadge();
+    showToast(`Added ${name} to cart!`);
 }
 
 function showToast(message) {
-  let toast = document.getElementById('toast');
-  if(!toast) {
-      toast = document.createElement('div');
-      toast.id = 'toast';
-      toast.className = 'fixed bottom-5 right-5 bg-gray-900 border border-gray-700 text-white px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-500 translate-y-20 opacity-0 z-50 flex items-center gap-3 backdrop-blur-md bg-opacity-90';
-      document.body.appendChild(toast);
-  }
-  toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 text-xl"></i> <span class="font-bold tracking-wide">${message}</span>`;
-  
-  setTimeout(() => { toast.classList.remove('translate-y-20', 'opacity-0'); }, 10);
-  setTimeout(() => { toast.classList.add('translate-y-20', 'opacity-0'); }, 3000);
+    let toast = document.getElementById('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'fixed bottom-5 right-5 bg-gray-900 border border-gray-700 text-white px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-500 translate-y-20 opacity-0 z-50 flex items-center gap-3 backdrop-blur-md bg-opacity-90';
+        document.body.appendChild(toast);
+    }
+    toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 text-xl"></i> <span class="font-bold tracking-wide">${message}</span>`;
+
+    setTimeout(() => { toast.classList.remove('translate-y-20', 'opacity-0'); }, 10);
+    setTimeout(() => { toast.classList.add('translate-y-20', 'opacity-0'); }, 3000);
 }
 
 function renderCart() {
-  const cartContainer = document.getElementById('cart-items-container');
-  const cartTotalAmount = document.getElementById('cart-total-amount');
-  const cartSummary = document.getElementById('cart-summary');
-  if (!cartContainer) return;
-  
-  if (cart.length === 0) {
-    cartContainer.innerHTML = `
+    const cartContainer = document.getElementById('cart-items-container');
+    const cartTotalAmount = document.getElementById('cart-total-amount');
+    const cartSummary = document.getElementById('cart-summary');
+    if (!cartContainer) return;
+
+    if (cart.length === 0) {
+        cartContainer.innerHTML = `
       <div class="text-center py-16 bg-white rounded-3xl shadow-sm border border-gray-100">
         <i class="fa-solid fa-bag-shopping text-7xl text-gray-200 mb-6 block fade-in"></i>
         <h3 class="text-2xl font-bold text-gray-800 mb-2">Your cart is empty</h3>
         <p class="text-gray-500 mb-8 max-w-sm mx-auto">Looks like you haven't added any premium products to your cart yet.</p>
         <a href="products.html" class="inline-flex items-center gap-2 bg-accent text-white px-8 py-4 rounded-full font-semibold hover:bg-blue-600 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1">Start Shopping</a>
       </div>`;
-    if (cartTotalAmount) cartTotalAmount.innerText = '$0.00';
-    if (cartSummary) cartSummary.style.display = 'none';
-    return;
-  }
-  
-  if (cartSummary) cartSummary.style.display = 'block';
-  let html = '';
-  let total = 0;
-  
-  cart.forEach((item, index) => {
-    const itemTotal = item.price * item.quantity;
-    total += itemTotal;
-    html += `
+        if (cartTotalAmount) cartTotalAmount.innerText = '$0.00';
+        if (cartSummary) cartSummary.style.display = 'none';
+        return;
+    }
+
+    if (cartSummary) cartSummary.style.display = 'block';
+    let html = '';
+    let total = 0;
+
+    cart.forEach((item, index) => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+        html += `
       <div class="flex flex-col sm:flex-row items-center bg-white p-4 rounded-2xl border border-gray-100 mb-4 gap-6 relative group transition duration-300 hover:shadow-md">
         <img src="${item.image}" alt="${item.name}" class="w-28 h-28 object-cover rounded-xl shadow-sm" onerror="this.src='https://via.placeholder.com/150'">
         <div class="flex-1 text-center sm:text-left">
@@ -526,13 +526,13 @@ function renderCart() {
         <button onclick="removeItem(${index})" class="absolute sm:relative -top-3 -right-3 sm:top-0 sm:right-0 bg-red-100 text-red-500 hover:bg-red-500 hover:text-white sm:bg-transparent sm:hover:bg-red-50 w-10 h-10 rounded-full flex items-center justify-center transition duration-300"><i class="fa-solid fa-trash"></i></button>
       </div>
     `;
-  });
-  
-  cartContainer.innerHTML = html;
-  
-  const subtotalElem = document.getElementById('cart-subtotal');
-  if(subtotalElem) subtotalElem.innerHTML = formatPrice(total);
-  if(cartTotalAmount) cartTotalAmount.innerHTML = formatPrice(total);
+    });
+
+    cartContainer.innerHTML = html;
+
+    const subtotalElem = document.getElementById('cart-subtotal');
+    if (subtotalElem) subtotalElem.innerHTML = formatPrice(total);
+    if (cartTotalAmount) cartTotalAmount.innerHTML = formatPrice(total);
 }
 
 function updateQuantity(index, change) {
@@ -553,7 +553,7 @@ function removeItem(index) {
 // Global Initialization
 document.addEventListener('DOMContentLoaded', () => {
     initStoreLogo();
-    
+
     // Global floating WA button
     const waBtn = document.createElement('a');
     waBtn.href = "https://wa.me/94782809538";
@@ -561,36 +561,36 @@ document.addEventListener('DOMContentLoaded', () => {
     waBtn.className = "fixed bottom-5 left-5 z-[90] bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center text-3xl shadow-xl hover:shadow-2xl hover:scale-110 transition duration-300";
     waBtn.innerHTML = '<i class="fa-brands fa-whatsapp"></i>';
     document.body.appendChild(waBtn);
-    
+
     // Load Firebase logic! This will automatically fetch real-time items from Cloud and render them
     loadFirebaseAndInit();
-    
+
     updateCartBadge();
     renderCart();
-    
+
     // Attach form submission if on manage page
     const addForm = document.getElementById('add-item-form');
-    if(addForm) {
+    if (addForm) {
         addForm.addEventListener('submit', addProduct);
     }
-    
+
     // Attach Multi-Image compress listener
     const itemFileInput = document.getElementById('item-file');
-    if(itemFileInput) itemFileInput.addEventListener('change', window.handleImageFilesSelection);
-    
+    if (itemFileInput) itemFileInput.addEventListener('change', window.handleImageFilesSelection);
+
     // Store Logo Upload event
     const logoInput = document.getElementById('store-logo-input');
-    if(logoInput) {
-        logoInput.addEventListener('change', function(e) {
-            if(e.target.files && e.target.files[0]) {
+    if (logoInput) {
+        logoInput.addEventListener('change', function (e) {
+            if (e.target.files && e.target.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(ev) {
+                reader.onload = function (ev) {
                     try {
                         localStorage.setItem('storeLogo', ev.target.result); // local fallback
                         initStoreLogo();
-                        
+
                         // Push to Firebase Live Store Logo
-                        if(db) {
+                        if (db) {
                             db.collection("settings").doc("storeProfile").set({
                                 logoData: ev.target.result
                             }).then(() => {
@@ -601,7 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         } else {
                             showToast('Updated locally (Firebase linking...)');
                         }
-                    } catch(err) {
+                    } catch (err) {
                         alert("Image is too large to save! Please use a smaller profile picture (under 1MB).");
                     }
                 };
@@ -623,12 +623,12 @@ function addSale(event) {
     const amount = parseFloat(document.getElementById('sale-amount').value);
     const cname = document.getElementById('sale-customer').value || 'Guest';
     const date = document.getElementById('sale-date').value || new Date().toISOString().split('T')[0];
-    
+
     const products = getProducts();
     const product = products.find(p => p.id === itemId);
     const itemName = product ? product.name : 'Unknown Item';
     const cat = product ? product.cat : 'Unknown';
-    
+
     let sales = getSales();
     sales.push({
         id: 's' + Date.now(),
@@ -641,18 +641,18 @@ function addSale(event) {
         customer: cname,
         timestamp: Date.now()
     });
-    
+
     localStorage.setItem('storeSales', JSON.stringify(sales));
     showToast('Sale logged successfully! Analytics Updated.');
-    
+
     document.getElementById('log-sale-form').reset();
     document.getElementById('sale-date').value = new Date().toISOString().split('T')[0];
-    
+
     renderDashboard();
 }
 
 function deleteSale(id) {
-    if(confirm('Are you sure you want to delete this sales record?')) {
+    if (confirm('Are you sure you want to delete this sales record?')) {
         let sales = getSales();
         sales = sales.filter(s => s.id !== id);
         localStorage.setItem('storeSales', JSON.stringify(sales));
@@ -666,37 +666,37 @@ let categoryChartInstance = null;
 function renderDashboard() {
     const tableBody = document.getElementById('sales-table-body');
     const itemSelect = document.getElementById('sale-item');
-    if(!tableBody || !itemSelect) return;
-    
+    if (!tableBody || !itemSelect) return;
+
     // Populate dropdown
     const products = getProducts();
-    if(itemSelect.options.length <= 0) {
+    if (itemSelect.options.length <= 0) {
         itemSelect.innerHTML = '<option value="" disabled selected>Select an item...</option>';
         products.forEach(p => {
             itemSelect.innerHTML += `<option value="${p.id}" data-price="${p.price}">${p.name} - ${formatPriceText(p.price)}</option>`;
         });
-        
-        itemSelect.addEventListener('change', function() {
+
+        itemSelect.addEventListener('change', function () {
             const price = this.options[this.selectedIndex].getAttribute('data-price');
             const qty = document.getElementById('sale-qty').value || 1;
-            if(price) document.getElementById('sale-amount').value = (parseFloat(price) * parseInt(qty)).toFixed(2);
+            if (price) document.getElementById('sale-amount').value = (parseFloat(price) * parseInt(qty)).toFixed(2);
         });
-        
-        document.getElementById('sale-qty').addEventListener('input', function() {
+
+        document.getElementById('sale-qty').addEventListener('input', function () {
             const price = itemSelect.options[itemSelect.selectedIndex]?.getAttribute('data-price');
             const qty = this.value || 1;
-            if(price) document.getElementById('sale-amount').value = (parseFloat(price) * parseInt(qty)).toFixed(2);
+            if (price) document.getElementById('sale-amount').value = (parseFloat(price) * parseInt(qty)).toFixed(2);
         });
     }
-    
+
     const onlineSales = typeof liveWebOrdersSales !== 'undefined' ? liveWebOrdersSales : [];
     const sales = getSales().concat(onlineSales);
-    sales.sort((a,b) => b.timestamp - a.timestamp);
-    
+    sales.sort((a, b) => b.timestamp - a.timestamp);
+
     let html = '';
     let totalRevenue = 0;
     let totalItemsSold = 0;
-    
+
     sales.forEach(s => {
         totalRevenue += s.amount;
         totalItemsSold += s.qty;
@@ -712,32 +712,32 @@ function renderDashboard() {
             </tr>
         `;
     });
-    
+
     tableBody.innerHTML = html || `<tr><td colspan="5" class="text-center p-10 text-gray-400 font-medium">No sales logged yet. When you receive WhatsApp orders, add them here to see your Reports!</td></tr>`;
-    if(document.getElementById('stat-revenue')) document.getElementById('stat-revenue').innerHTML = formatPrice(totalRevenue);
-    if(document.getElementById('stat-orders')) document.getElementById('stat-orders').innerText = sales.length;
-    if(document.getElementById('stat-items')) document.getElementById('stat-items').innerText = totalItemsSold;
+    if (document.getElementById('stat-revenue')) document.getElementById('stat-revenue').innerHTML = formatPrice(totalRevenue);
+    if (document.getElementById('stat-orders')) document.getElementById('stat-orders').innerText = sales.length;
+    if (document.getElementById('stat-items')) document.getElementById('stat-items').innerText = totalItemsSold;
 
     renderCharts(sales);
 }
 
 function renderCharts(sales) {
-    if(!document.getElementById('revenueChart')) return;
+    if (!document.getElementById('revenueChart')) return;
 
     const last7Days = [];
     const revenueData = [];
-    for(let i=6; i>=0; i--) {
+    for (let i = 6; i >= 0; i--) {
         let d = new Date();
         d.setDate(d.getDate() - i);
         let dStr = d.toISOString().split('T')[0];
-        last7Days.push(d.toLocaleDateString(undefined, {month: 'short', day: 'numeric'}));
-        
+        last7Days.push(d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
+
         let dailyRev = sales.filter(s => s.date === dStr).reduce((acc, val) => acc + val.amount, 0);
         revenueData.push(dailyRev);
     }
-    
-    if(revenueChartInstance) revenueChartInstance.destroy();
-    
+
+    if (revenueChartInstance) revenueChartInstance.destroy();
+
     const ctx1 = document.getElementById('revenueChart').getContext('2d');
     revenueChartInstance = new Chart(ctx1, {
         type: 'line',
@@ -755,16 +755,16 @@ function renderCharts(sales) {
                 pointRadius: 4
             }]
         },
-        options: { responsive: true, plugins: { legend: {display: false} }, maintainAspectRatio: false }
+        options: { responsive: true, plugins: { legend: { display: false } }, maintainAspectRatio: false }
     });
-    
+
     let catCounts = {};
     sales.forEach(s => {
         catCounts[s.cat] = (catCounts[s.cat] || 0) + s.qty;
     });
-    
-    if(categoryChartInstance) categoryChartInstance.destroy();
-    
+
+    if (categoryChartInstance) categoryChartInstance.destroy();
+
     const ctx2 = document.getElementById('categoryChart').getContext('2d');
     categoryChartInstance = new Chart(ctx2, {
         type: 'doughnut',
@@ -782,11 +782,11 @@ function renderCharts(sales) {
 }
 
 // --- Website Inline Checkout Logic ---
-window.placeOrderFirebase = function(e) {
-    if(e) e.preventDefault();
-    if(!cart || cart.length === 0) return;
-    if(!db) { alert("Connecting to Cloud... please wait."); return; }
-    
+window.placeOrderFirebase = function (e) {
+    if (e) e.preventDefault();
+    if (!cart || cart.length === 0) return;
+    if (!db) { alert("Connecting to Cloud... please wait."); return; }
+
     const name = document.getElementById('order-name').value;
     const phone = document.getElementById('order-phone').value;
     const phoneOpt = document.getElementById('order-phone-opt').value || '';
@@ -795,10 +795,10 @@ window.placeOrderFirebase = function(e) {
     const town = document.getElementById('order-town').value;
     const address = document.getElementById('order-address').value;
     const prefs = document.getElementById('order-prefs').value || '';
-    
+
     let total = 0;
     cart.forEach(i => total += (i.price * i.quantity));
-    
+
     const orderData = {
         id: 'ord' + Date.now(),
         customerInfo: { name, phone, phoneOpt, country, district, town, address },
@@ -809,18 +809,18 @@ window.placeOrderFirebase = function(e) {
         timestamp: Date.now(),
         date: new Date().toISOString().split('T')[0]
     };
-    
+
     db.collection('orders').doc(orderData.id).set(orderData).then(() => {
-        
+
         cart = [];
         localStorage.removeItem('cart');
         renderCart();
         updateCartBadge();
-        
+
         document.getElementById('checkout-form').classList.add('hidden');
         const showBtn = document.getElementById('show-checkout-btn');
-        if(showBtn) showBtn.style.display = 'block';
-        
+        if (showBtn) showBtn.style.display = 'block';
+
         let woText = `🛍️ *New Web Order [${orderData.id}]*\n\n`;
         woText += `*Customer:* ${name}\n`;
         woText += `*Phone:* ${phone}${phoneOpt ? ', ' + phoneOpt : ''}\n`;
@@ -829,35 +829,15 @@ window.placeOrderFirebase = function(e) {
         if (prefs) woText += `*Preferences:* ${prefs}\n`;
         woText += `\n*Ordered Items:*\n`;
         orderData.items.forEach((i, idx) => {
-             woText += `${idx+1}. ${i.name} (x${i.quantity}) - ${formatPriceText(i.price * i.quantity)}\n`;
+            woText += `${idx + 1}. ${i.name} (x${i.quantity}) - ${formatPriceText(i.price * i.quantity)}\n`;
         });
         woText += `\n*Total Amount:* ${formatPriceText(total)}\n`;
-        
-        // --- Telegram Bot API Setup ---
-        // 1. Send /newbot to @BotFather in Telegram to get a Bot Token.
-        // 2. Search @userinfobot in Telegram and send /start to get your Chat ID.
-        // 3. Paste them below! 
-        const myTelegramBotToken = "8735257553:AAEpMz1WRcHqF9B8k3iGuukHmcqKxpnq5FY"; 
-        const myTelegramChatId = "7953753933";    
-        
-        if (myTelegramBotToken !== "YOUR_TELEGRAM_BOT_TOKEN") {
-             const tgUrl = `https://api.telegram.org/bot${myTelegramBotToken}/sendMessage`;
-             fetch(tgUrl, {
-                 method: 'POST',
-                 headers: { 'Content-Type': 'application/json' },
-                 body: JSON.stringify({
-                     chat_id: myTelegramChatId,
-                     text: woText,
-                     parse_mode: 'Markdown'
-                 })
-             }).catch(e => console.log('Telegram error:', e));
-        } else {
-             console.log("Telegram setup pending. Order saved to DB.");
-        }
-        
+
+
+
         showSuccessModal(orderData.id);
 
-        
+
     }).catch(err => {
         alert("Failed to place order. Try again. " + err.message);
     });
@@ -867,7 +847,7 @@ window.placeOrderFirebase = function(e) {
 function showSuccessModal(orderId) {
     const overlay = document.createElement('div');
     overlay.className = "fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-500 px-4";
-    
+
     overlay.innerHTML = `
         <div class="bg-white rounded-[2rem] p-8 md:p-12 shadow-2xl max-w-lg w-full text-center transform scale-90 transition-transform duration-500" id="success-modal-content">
             <div class="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner shrink-0">
@@ -885,9 +865,9 @@ function showSuccessModal(orderId) {
             </button>
         </div>
     `;
-    
+
     document.body.appendChild(overlay);
-    
+
     setTimeout(() => {
         overlay.classList.remove('opacity-0');
         document.getElementById('success-modal-content').classList.remove('scale-90');
@@ -898,49 +878,49 @@ function showSuccessModal(orderId) {
 let liveWebOrdersSales = [];
 
 function renderAdminOrders() {
-    if(!document.getElementById('online-orders-tbody')) return;
-    
-    if(!db) return;
-    
+    if (!document.getElementById('online-orders-tbody')) return;
+
+    if (!db) return;
+
     db.collection('orders').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
         let html = '';
         let pendingCnt = 0;
         let shippedCnt = 0;
-        
+
         liveWebOrdersSales = [];
-        
+
         if (snapshot.empty) {
             document.getElementById('online-orders-tbody').innerHTML = `<tr><td colspan="6" class="p-8 text-center text-gray-400 font-medium">No online orders yet.</td></tr>`;
-            if(typeof renderDashboard === 'function') renderDashboard();
+            if (typeof renderDashboard === 'function') renderDashboard();
             return;
         }
 
         snapshot.forEach(doc => {
             const order = doc.data();
             const id = doc.id;
-            
+
             if (order.status === 'Pending') pendingCnt++;
             if (order.status === 'Shipped') shippedCnt++;
-            
+
             // Map items for the unified charts/reports
-            if(order.items && order.items.length > 0) {
-                 order.items.forEach(item => {
-                     let productMeta = getProducts().find(p => p.id === item.id);
-                     liveWebOrdersSales.push({
-                         id: 'web_' + id + '_' + item.id,
-                         isWeb: true,
-                         date: order.date,
-                         itemId: item.id,
-                         itemName: item.name,
-                         cat: productMeta ? productMeta.cat : 'Online',
-                         qty: item.quantity,
-                         amount: item.price * item.quantity,
-                         customer: order.customerInfo.name,
-                         timestamp: order.timestamp
-                     });
-                 });
+            if (order.items && order.items.length > 0) {
+                order.items.forEach(item => {
+                    let productMeta = getProducts().find(p => p.id === item.id);
+                    liveWebOrdersSales.push({
+                        id: 'web_' + id + '_' + item.id,
+                        isWeb: true,
+                        date: order.date,
+                        itemId: item.id,
+                        itemName: item.name,
+                        cat: productMeta ? productMeta.cat : 'Online',
+                        qty: item.quantity,
+                        amount: item.price * item.quantity,
+                        customer: order.customerInfo.name,
+                        timestamp: order.timestamp
+                    });
+                });
             }
-            
+
             let statusBadge = '';
             if (order.status === 'Pending') statusBadge = `<span class="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">Pending</span>`;
             else if (order.status === 'Shipped') statusBadge = `<span class="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">Shipped</span>`;
@@ -974,18 +954,18 @@ function renderAdminOrders() {
             </tr>
             `;
         });
-        
+
         document.getElementById('online-orders-tbody').innerHTML = html;
-        if(document.getElementById('pending-orders-count')) document.getElementById('pending-orders-count').innerText = pendingCnt;
-        if(document.getElementById('shipped-orders-count')) document.getElementById('shipped-orders-count').innerText = shippedCnt;
-        
+        if (document.getElementById('pending-orders-count')) document.getElementById('pending-orders-count').innerText = pendingCnt;
+        if (document.getElementById('shipped-orders-count')) document.getElementById('shipped-orders-count').innerText = shippedCnt;
+
         // Auto Update Dashboard UI
-        if(typeof renderDashboard === 'function') renderDashboard();
+        if (typeof renderDashboard === 'function') renderDashboard();
     });
 }
 
 function updateOrderStatus(id, newStatus) {
-    if(!db) return;
+    if (!db) return;
     db.collection('orders').doc(id).update({
         status: newStatus
     }).then(() => {
@@ -994,17 +974,17 @@ function updateOrderStatus(id, newStatus) {
 }
 
 function deleteOrder(id) {
-    if(confirm('Are you sure you want to permanently delete this web order?')) {
+    if (confirm('Are you sure you want to permanently delete this web order?')) {
         db.collection('orders').doc(id).delete().then(() => showToast('Order Deleted'));
     }
 }
 
 function viewOrderDetails(id) {
     db.collection('orders').doc(id).get().then(doc => {
-        if(!doc.exists) return;
+        if (!doc.exists) return;
         const o = doc.data();
         let itemsHtml = o.items.map(i => `<div class="flex justify-between border-b border-gray-100 py-2"><span class="font-medium">${i.name} (x${i.quantity})</span> <span class="font-bold text-accent">${formatPriceText(i.price * i.quantity)}</span></div>`).join('');
-        
+
         const overlay = document.createElement('div');
         overlay.className = "fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300 px-4";
         overlay.innerHTML = `
@@ -1052,22 +1032,22 @@ function viewOrderDetails(id) {
 }
 
 // --- Order Tracking Logic (Customer Side) ---
-window.trackMyOrder = function(e) {
+window.trackMyOrder = function (e) {
     e.preventDefault();
     const orderId = document.getElementById('track-order-id').value.trim();
-    if(!orderId) {
+    if (!orderId) {
         alert("Please enter a valid Order ID");
         return;
     }
-    
+
     const resultDiv = document.getElementById('track-result');
     resultDiv.innerHTML = `<div class="text-center py-4 text-gray-500"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>Searching...</div>`;
     resultDiv.classList.remove('hidden');
-    
-    if(!db) { resultDiv.innerHTML = `<div class="text-red-500 text-center font-bold">Database not connected.</div>`; return; }
-    
+
+    if (!db) { resultDiv.innerHTML = `<div class="text-red-500 text-center font-bold">Database not connected.</div>`; return; }
+
     db.collection('orders').doc(orderId).get().then(doc => {
-        if(!doc.exists) {
+        if (!doc.exists) {
             resultDiv.innerHTML = `
                 <div class="bg-red-50 text-red-600 p-4 rounded-xl text-center border border-red-100">
                     <i class="fa-solid fa-circle-exclamation text-xl mb-2 block"></i>
@@ -1079,9 +1059,9 @@ window.trackMyOrder = function(e) {
         const o = doc.data();
         let statusColor = "gray-500";
         let statusIcon = "fa-clock";
-        if(o.status === "Pending") { statusColor = "orange-500"; statusIcon = "fa-hourglass-half"; }
-        if(o.status === "Shipped") { statusColor = "emerald-500"; statusIcon = "fa-truck-fast"; }
-        
+        if (o.status === "Pending") { statusColor = "orange-500"; statusIcon = "fa-hourglass-half"; }
+        if (o.status === "Shipped") { statusColor = "emerald-500"; statusIcon = "fa-truck-fast"; }
+
         resultDiv.innerHTML = `
             <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                 <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
@@ -1126,7 +1106,7 @@ window.trackMyOrder = function(e) {
 
 document.addEventListener('DOMContentLoaded', () => {
     // Already defined in previous block, so we check if renderAdminOrders is needed
-    if(document.getElementById('online-orders-tbody')) {
+    if (document.getElementById('online-orders-tbody')) {
         renderAdminOrders();
     }
 });
