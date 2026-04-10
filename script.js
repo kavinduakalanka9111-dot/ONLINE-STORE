@@ -75,6 +75,8 @@ function loadFirebaseAndInit() {
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
 
+            if (typeof renderAdminOrders === 'function') renderAdminOrders();
+
             // Sync products from firestore instead of localStorage
             db.collection("products").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
                 storeProducts = [];
@@ -989,7 +991,7 @@ function viewOrderDetails(id) {
         const o = doc.data() || {};
         const cInfo = o.customerInfo || {};
         const itemsList = o.items || [];
-        
+
         let itemsHtml = itemsList.map(i => `
             <div class="flex justify-between border-b border-gray-100 py-3 items-center">
                 <div class="flex items-center gap-3">
@@ -1003,7 +1005,7 @@ function viewOrderDetails(id) {
             </div>
         `).join('');
 
-        const trackingNo = o.trackingNo || '';
+        const trackingNo = o.trackingNo ? String(o.trackingNo) : '';
 
         const overlay = document.createElement('div');
         overlay.className = "fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 transition-opacity duration-300 px-4 py-8";
@@ -1107,8 +1109,8 @@ window.trackMyOrder = function (e) {
         const o = doc.data() || {};
         const cInfo = o.customerInfo || {};
         const itemsList = o.items || [];
-        const trackingNo = o.trackingNo || '';
-        
+        const trackingNo = o.trackingNo ? String(o.trackingNo) : '';
+
         let statusObj = { text: 'Pending', color: 'orange', icon: 'fa-box', pct: 25 };
         if (o.status === 'Processing') statusObj = { text: 'Processing', color: 'blue', icon: 'fa-gears', pct: 50 };
         if (o.status === 'Shipped') statusObj = { text: 'Shipped', color: 'purple', icon: 'fa-truck-fast', pct: 75 };
