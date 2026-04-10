@@ -940,9 +940,11 @@ function renderAdminOrders() {
                     <div class="text-xs text-gray-400 line-clamp-1" title="${order.customerInfo.address}">${order.customerInfo.address}</div>
                 </td>
                 <td class="p-4">
-                    <select onchange="updateOrderStatus('${id}', this.value)" class="bg-white border border-gray-200 rounded-lg px-2 py-1 text-sm font-bold focus:outline-none cursor-pointer">
+                    <select onchange="updateOrderStatus('${id}', this.value)" class="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none cursor-pointer shadow-sm hover:border-accent transition">
                         <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option value="Processing" ${order.status === 'Processing' ? 'selected' : ''}>Processing</option>
                         <option value="Shipped" ${order.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                        <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
                         <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
                     </select>
                 </td>
@@ -983,44 +985,75 @@ function viewOrderDetails(id) {
     db.collection('orders').doc(id).get().then(doc => {
         if (!doc.exists) return;
         const o = doc.data();
-        let itemsHtml = o.items.map(i => `<div class="flex justify-between border-b border-gray-100 py-2"><span class="font-medium">${i.name} (x${i.quantity})</span> <span class="font-bold text-accent">${formatPriceText(i.price * i.quantity)}</span></div>`).join('');
+        let itemsHtml = o.items.map(i => `
+            <div class="flex justify-between border-b border-gray-100 py-3 items-center">
+                <div class="flex items-center gap-3">
+                    <img src="${i.image || 'https://via.placeholder.com/50'}" class="w-12 h-12 object-cover rounded shadow-sm">
+                    <div>
+                        <span class="font-black text-gray-800 block">${i.name}</span>
+                        <span class="bg-blue-50 text-accent text-xs px-2 py-0.5 rounded-full font-bold">Qty: ${i.quantity}</span>
+                    </div>
+                </div>
+                <span class="font-black text-brand text-lg">${formatPriceText(i.price * i.quantity)}</span>
+            </div>
+        `).join('');
+
+        const trackingNo = o.trackingNo || '';
 
         const overlay = document.createElement('div');
-        overlay.className = "fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300 px-4";
+        overlay.className = "fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-md opacity-0 transition-opacity duration-300 px-4 py-8";
         overlay.innerHTML = `
-            <div class="bg-white rounded-3xl p-8 max-w-2xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
-                <button onclick="this.closest('.fixed').remove()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
-                <h2 class="text-2xl font-black text-gray-900 mb-6 border-b pb-4">Order Details <span class="text-accent text-sm ml-2">#${o.id}</span></h2>
+            <div class="bg-white rounded-[2rem] p-8 max-w-3xl w-full shadow-2xl relative max-h-full flex flex-col">
+                <button onclick="this.closest('.fixed').remove()" class="absolute top-6 right-6 text-gray-400 hover:text-red-500 w-10 h-10 rounded-full bg-gray-50 hover:bg-red-50 flex items-center justify-center transition shadow-sm z-10"><i class="fa-solid fa-xmark"></i></button>
                 
-                <div class="grid grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Customer Info</h3>
-                        <p class="font-bold text-gray-800">${o.customerInfo.name}</p>
-                        <p class="text-sm text-gray-600">${o.customerInfo.phone}</p>
-                        ${o.customerInfo.phoneOpt ? `<p class="text-xs text-gray-500">${o.customerInfo.phoneOpt}</p>` : ''}
-                    </div>
-                    <div>
-                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Delivery Address</h3>
-                        <p class="text-sm text-gray-700">${o.customerInfo.address}</p>
-                        <p class="text-sm text-gray-700">${o.customerInfo.town}, ${o.customerInfo.district}</p>
-                        <p class="text-sm text-gray-700">${o.customerInfo.country}</p>
-                    </div>
+                <h2 class="text-3xl font-black text-gray-900 mb-2 flex items-center gap-3"><i class="fa-solid fa-box-open text-accent"></i> Order Details</h2>
+                <div class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 border-b pb-4 flex justify-between">
+                    <span>ID: <span class="text-brand">${o.id}</span></span>
+                    <span>${o.date}</span>
                 </div>
                 
-                ${o.preferences ? `
-                <div class="bg-yellow-50 p-4 rounded-xl mb-6">
-                    <h3 class="text-xs font-bold text-yellow-600 uppercase tracking-wide mb-1">Customer Preferences / Notes</h3>
-                    <p class="text-sm text-yellow-800">${o.preferences}</p>
-                </div>
-                ` : ''}
-                
-                <div>
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Ordered Items</h3>
-                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                        ${itemsHtml}
-                        <div class="flex justify-between pt-4 mt-2 border-t border-gray-200">
-                            <span class="font-black text-gray-800 text-lg">Total</span>
-                            <span class="font-black text-brand text-xl">${formatPrice(o.total)}</span>
+                <div class="overflow-y-auto pr-2 custom-scrollbar flex-1">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                            <h3 class="text-xs font-black text-accent uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fa-solid fa-user"></i> Customer Info</h3>
+                            <p class="font-black text-gray-900 text-lg mb-1">${o.customerInfo.name}</p>
+                            <p class="text-gray-600 font-medium flex items-center gap-2"><i class="fa-solid fa-phone text-gray-400 text-xs"></i> <a href="tel:${o.customerInfo.phone}" class="hover:text-accent">${o.customerInfo.phone}</a></p>
+                            ${o.customerInfo.phoneOpt ? `<p class="text-gray-500 text-sm flex items-center gap-2"><i class="fa-solid fa-phone text-gray-300 text-xs"></i> <a href="tel:${o.customerInfo.phoneOpt}" class="hover:text-accent">${o.customerInfo.phoneOpt}</a></p>` : ''}
+                        </div>
+                        <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                            <h3 class="text-xs font-black text-emerald-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fa-solid fa-location-dot"></i> Delivery Address</h3>
+                            <p class="text-gray-800 font-medium leading-tight mb-2">${o.customerInfo.address}</p>
+                            <p class="text-gray-600 text-sm font-bold">${o.customerInfo.town}, ${o.customerInfo.district}</p>
+                            <p class="text-gray-500 text-xs uppercase">${o.customerInfo.country}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-blue-50 border border-blue-100 p-5 rounded-2xl mb-8">
+                        <h3 class="text-xs font-black text-blue-600 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fa-solid fa-truck-fast"></i> Update Delivery Tracking</h3>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="text" id="tracking-input-${o.id}" value="${trackingNo}" placeholder="Enter Courier Link or ID" class="flex-1 px-4 py-3 rounded-xl border border-blue-200 focus:outline-none focus:ring-2 focus:ring-accent font-medium text-gray-800 shadow-inner">
+                            <button onclick="updateOrderTracking('${o.id}')" class="bg-accent hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-bold transition shadow-md whitespace-nowrap">Save Tracking</button>
+                        </div>
+                        <p class="text-xs text-blue-500 mt-2 font-medium">Adding a tracking number will allow the customer to see it when they track their order.</p>
+                    </div>
+
+                    ${o.preferences ? `
+                    <div class="bg-yellow-50 p-5 rounded-2xl mb-8 border border-yellow-100">
+                        <h3 class="text-xs font-black text-yellow-600 uppercase tracking-widest mb-2 flex items-center gap-2"><i class="fa-solid fa-note-sticky"></i> Customer Preferences / Notes</h3>
+                        <p class="font-medium text-yellow-900">${o.preferences}</p>
+                    </div>
+                    ` : ''}
+                    
+                    <div>
+                        <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Ordered Items (${o.items.length})</h3>
+                        <div class="bg-white rounded-2xl p-2 border border-gray-200 shadow-sm">
+                            <div class="px-3">
+                                ${itemsHtml}
+                            </div>
+                            <div class="bg-gray-900 text-white p-5 rounded-xl mt-3 flex justify-between items-center shadow-md">
+                                <span class="font-black uppercase tracking-widest text-sm text-gray-300">Grand Total</span>
+                                <span class="font-black text-2xl">${formatPrice(o.total)}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1030,6 +1063,15 @@ function viewOrderDetails(id) {
         setTimeout(() => overlay.classList.remove('opacity-0'), 10);
     });
 }
+
+window.updateOrderTracking = function (id) {
+    const input = document.getElementById(`tracking-input-${id}`);
+    if (!input || !db) return;
+    const trackingNo = input.value.trim();
+    db.collection('orders').doc(id).update({ trackingNo }).then(() => {
+        showToast('Tracking details updated and visible to customer!');
+    }).catch(err => alert('Failed to update tracking'));
+};
 
 // --- Order Tracking Logic (Customer Side) ---
 window.trackMyOrder = function (e) {
@@ -1041,66 +1083,109 @@ window.trackMyOrder = function (e) {
     }
 
     const resultDiv = document.getElementById('track-result');
-    resultDiv.innerHTML = `<div class="text-center py-4 text-gray-500"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>Searching...</div>`;
+    resultDiv.innerHTML = `<div class="text-center py-10 text-gray-500"><i class="fa-solid fa-spinner fa-spin text-4xl mb-4 text-accent drop-shadow-md"></i><br><span class="font-bold text-lg tracking-wide uppercase">Searching Secure Database...</span></div>`;
     resultDiv.classList.remove('hidden');
 
-    if (!db) { resultDiv.innerHTML = `<div class="text-red-500 text-center font-bold">Database not connected.</div>`; return; }
+    if (!db) { resultDiv.innerHTML = `<div class="bg-red-50 text-red-500 text-center font-bold p-4 rounded-xl border border-red-100"><i class="fa-solid fa-triangle-exclamation mr-2"></i> Database connecting. Try again in a moment.</div>`; return; }
 
     db.collection('orders').doc(orderId).get().then(doc => {
         if (!doc.exists) {
             resultDiv.innerHTML = `
-                <div class="bg-red-50 text-red-600 p-4 rounded-xl text-center border border-red-100">
-                    <i class="fa-solid fa-circle-exclamation text-xl mb-2 block"></i>
-                    <span class="font-bold">Order Not Found</span><br><span class="text-sm">Please check your Order ID and try again.</span>
+                <div class="bg-red-50 text-red-600 p-8 rounded-[2rem] text-center border border-red-100 shadow-inner">
+                    <div class="w-20 h-20 bg-red-100 rounded-full flex mx-auto items-center justify-center mb-4"><i class="fa-solid fa-circle-exclamation text-3xl"></i></div>
+                    <h3 class="text-2xl font-black mb-2">Order Not Found</h3>
+                    <p class="text-red-400 font-medium max-w-sm mx-auto">We couldn't find an order with that ID. Please check for typos and try again.</p>
                 </div>
             `;
             return;
         }
         const o = doc.data();
-        let statusColor = "gray-500";
-        let statusIcon = "fa-clock";
-        if (o.status === "Pending") { statusColor = "orange-500"; statusIcon = "fa-hourglass-half"; }
-        if (o.status === "Shipped") { statusColor = "emerald-500"; statusIcon = "fa-truck-fast"; }
+
+        let statusObj = { text: 'Pending', color: 'orange', icon: 'fa-box', pct: 25 };
+        if (o.status === 'Processing') statusObj = { text: 'Processing', color: 'blue', icon: 'fa-gears', pct: 50 };
+        if (o.status === 'Shipped') statusObj = { text: 'Shipped', color: 'purple', icon: 'fa-truck-fast', pct: 75 };
+        if (o.status === 'Delivered') statusObj = { text: 'Delivered', color: 'emerald', icon: 'fa-house-circle-check', pct: 100 };
+        if (o.status === 'Cancelled') statusObj = { text: 'Cancelled', color: 'red', icon: 'fa-ban', pct: 100 };
+
+        const trackingHtml = o.trackingNo ? `
+            <div class="bg-blue-50 border border-blue-100 p-5 rounded-2xl mb-6 shadow-sm">
+                <h4 class="text-xs font-black text-blue-500 uppercase tracking-widest mb-1 items-center flex gap-2"><i class="fa-solid fa-link"></i> Courier Tracking</h4>
+                ${o.trackingNo.startsWith('http') ?
+                `<a href="${o.trackingNo}" target="_blank" class="text-blue-700 font-bold bg-white px-4 py-3 rounded-xl border border-blue-200 block text-center hover:bg-blue-600 hover:text-white transition shadow-md flex items-center justify-center gap-2">Track on Courier Website <i class="fa-solid fa-arrow-up-right-from-square"></i></a>` :
+                `<div class="font-black text-xl text-blue-900 tracking-wider font-mono bg-white px-4 py-2 rounded-xl border border-blue-200 inline-block">${o.trackingNo}</div>`
+            }
+            </div>
+        ` : '';
 
         resultDiv.innerHTML = `
-            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+            <div class="bg-white p-8 md:p-10 rounded-[2.5rem] border border-gray-100 shadow-xl relative overflow-hidden group">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-${statusObj.color}-50 rounded-bl-full -z-10 transition-transform duration-700 group-hover:scale-150"></div>
+                <div class="flex flex-col md:flex-row justify-between md:items-center mb-8 border-b border-gray-100 pb-6 gap-4">
                     <div>
-                        <div class="text-xs text-gray-400 font-bold uppercase tracking-widest">Order ID</div>
-                        <div class="font-black text-gray-800 text-lg">${o.id}</div>
+                        <div class="text-xs text-gray-400 font-black uppercase tracking-widest mb-1 flex items-center gap-2"><i class="fa-solid fa-hashtag text-${statusObj.color}-500"></i> Order Confirmed</div>
+                        <div class="font-black text-gray-900 text-2xl tracking-tight">${o.id}</div>
                     </div>
-                    <div class="text-right">
-                        <div class="text-xs text-gray-400 font-bold uppercase tracking-widest">Date</div>
-                        <div class="font-medium text-gray-600">${o.date}</div>
+                    <div class="md:text-right">
+                        <div class="text-xs text-gray-400 font-black uppercase tracking-widest mb-1"><i class="fa-regular fa-calendar"></i> Order Date</div>
+                        <div class="font-bold text-gray-600 border border-gray-200 bg-gray-50 px-3 py-1 rounded-lg inline-block">${o.date}</div>
                     </div>
                 </div>
                 
-                <div class="text-center mb-6">
-                    <div class="w-16 h-16 rounded-full bg-${statusColor.split('-')[0]}-100 flex items-center justify-center mx-auto mb-3 shadow-inner">
-                        <i class="fa-solid ${statusIcon} text-2xl text-${statusColor}"></i>
+                <div class="mb-10 relative">
+                    <div class="h-3 w-full bg-gray-100 rounded-full overflow-hidden shadow-inner">
+                        <div class="h-full bg-gradient-to-r ${o.status === 'Cancelled' ? 'from-red-400 to-red-600' : 'from-accent to-emerald-400'} rounded-full transition-all duration-1000 ease-out" style="width: 0%" id="progress-bar-fill"></div>
                     </div>
-                    <div class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">Current Status</div>
-                    <div class="text-3xl font-black text-${statusColor} uppercase tracking-widest">${o.status}</div>
+                    
+                    <div class="flex justify-between mt-4 px-2">
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full ${statusObj.pct >= 25 ? 'bg-accent text-white shadow-lg' : 'bg-gray-100 text-gray-400'} flex items-center justify-center text-xs font-bold transition-all"><i class="fa-solid fa-box"></i></div>
+                            <span class="text-[10px] font-black uppercase tracking-widest mt-2 ${statusObj.pct >= 25 ? 'text-gray-800' : 'text-gray-400'} hidden sm:block">Placed</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full ${statusObj.pct >= 50 ? 'bg-accent text-white shadow-lg' : 'bg-gray-100 text-gray-400'} flex items-center justify-center text-xs font-bold transition-all"><i class="fa-solid fa-gears"></i></div>
+                            <span class="text-[10px] font-black uppercase tracking-widest mt-2 ${statusObj.pct >= 50 ? 'text-gray-800' : 'text-gray-400'} hidden sm:block">Process</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full ${statusObj.pct >= 75 ? 'bg-accent text-white shadow-lg' : 'bg-gray-100 text-gray-400'} flex items-center justify-center text-xs font-bold transition-all"><i class="fa-solid fa-truck-fast"></i></div>
+                            <span class="text-[10px] font-black uppercase tracking-widest mt-2 ${statusObj.pct >= 75 ? 'text-gray-800' : 'text-gray-400'} hidden sm:block">Shipped</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full ${statusObj.pct >= 100 && o.status !== 'Cancelled' ? 'bg-emerald-500 text-white shadow-lg' : 'bg-gray-100 text-gray-400'} flex items-center justify-center text-xs font-bold transition-all"><i class="fa-solid fa-house-circle-check"></i></div>
+                            <span class="text-[10px] font-black uppercase tracking-widest mt-2 ${statusObj.pct >= 100 && o.status !== 'Cancelled' ? 'text-emerald-600' : 'text-gray-400'} hidden sm:block">Delivered</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mb-10">
+                    <div class="inline-flex items-center justify-center gap-3 bg-${statusObj.color}-50 px-6 py-3 rounded-full border border-${statusObj.color}-200 shadow-sm">
+                        <i class="fa-solid ${statusObj.icon} text-2xl text-${statusObj.color}-500"></i>
+                        <span class="text-2xl font-black text-${statusObj.color}-600 tracking-tight">${o.status}</span>
+                    </div>
                 </div>
                 
-                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                    <div class="flex justify-between mb-2">
-                        <span class="text-sm text-gray-500 font-medium">Customer</span>
-                        <span class="text-sm font-bold text-gray-800">${o.customerInfo.name}</span>
+                ${trackingHtml}
+                
+                <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100 shadow-inner">
+                    <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-200 pb-2 flex items-center gap-2"><i class="fa-solid fa-receipt"></i> Order Summary</h4>
+                    <div class="flex justify-between mb-3 text-gray-700">
+                        <span class="font-bold flex items-center gap-2"><i class="fa-solid fa-user text-gray-400"></i> ${o.customerInfo.name}</span>
+                        <span class="font-bold bg-white px-3 py-1 rounded-lg border border-gray-200 shadow-sm">${o.items.length} Items</span>
                     </div>
-                    <div class="flex justify-between mb-2">
-                        <span class="text-sm text-gray-500 font-medium">Items</span>
-                        <span class="text-sm font-bold text-gray-800">${o.items.length} items</span>
-                    </div>
-                    <div class="flex justify-between pt-2 border-t border-gray-200">
-                        <span class="text-sm text-gray-500 font-medium">Total Amount</span>
-                        <span class="font-black text-brand">${formatPriceText(o.total)}</span>
+                    <div class="flex justify-between items-end pt-4 border-t border-gray-200 mt-2">
+                        <span class="text-xs text-gray-500 font-bold uppercase tracking-widest leading-none">Grand Total Paid</span>
+                        <span class="font-black text-3xl text-brand leading-none">${formatPriceText(o.total)}</span>
                     </div>
                 </div>
             </div>
         `;
+
+        setTimeout(() => {
+            const bar = document.getElementById('progress-bar-fill');
+            if (bar) bar.style.width = statusObj.pct + '%';
+        }, 50);
+
     }).catch(err => {
-        resultDiv.innerHTML = `<div class="text-red-500 text-center font-bold">Error looking up order. Please try again.</div>`;
+        resultDiv.innerHTML = `<div class="bg-red-50 text-red-500 text-center font-bold mb-4 p-4 rounded-xl border border-red-100 shadow-sm"><i class="fa-solid fa-circle-xmark mr-2 text-lg"></i> An error occurred looking up your order. Try again.</div>`;
     });
 };
 
