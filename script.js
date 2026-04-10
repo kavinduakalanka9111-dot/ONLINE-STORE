@@ -896,27 +896,29 @@ function renderAdminOrders() {
         }
 
         snapshot.forEach(doc => {
-            const order = doc.data();
+            const order = doc.data() || {};
             const id = doc.id;
+            const cInfo = order.customerInfo || {};
+            const itemsList = order.items || [];
 
             if (order.status === 'Pending') pendingCnt++;
             if (order.status === 'Shipped') shippedCnt++;
 
             // Map items for the unified charts/reports
-            if (order.items && order.items.length > 0) {
-                order.items.forEach(item => {
+            if (itemsList.length > 0) {
+                itemsList.forEach(item => {
                     let productMeta = getProducts().find(p => p.id === item.id);
                     liveWebOrdersSales.push({
                         id: 'web_' + id + '_' + item.id,
                         isWeb: true,
-                        date: order.date,
-                        itemId: item.id,
-                        itemName: item.name,
+                        date: order.date || '',
+                        itemId: item.id || '',
+                        itemName: item.name || '',
                         cat: productMeta ? productMeta.cat : 'Online',
-                        qty: item.quantity,
-                        amount: item.price * item.quantity,
-                        customer: order.customerInfo.name,
-                        timestamp: order.timestamp
+                        qty: item.quantity || 1,
+                        amount: (item.price || 0) * (item.quantity || 1),
+                        customer: cInfo.name || 'Unknown',
+                        timestamp: order.timestamp || Date.now()
                     });
                 });
             }
@@ -924,20 +926,20 @@ function renderAdminOrders() {
             let statusBadge = '';
             if (order.status === 'Pending') statusBadge = `<span class="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">Pending</span>`;
             else if (order.status === 'Shipped') statusBadge = `<span class="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">Shipped</span>`;
-            else statusBadge = `<span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">${order.status}</span>`;
+            else statusBadge = `<span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">${order.status || 'Pending'}</span>`;
 
             html += `
             <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
                 <td class="p-4 font-bold text-xs text-brand tracking-widest uppercase">
-                    ${id}<br><span class="text-gray-400 font-normal mt-1 block">${order.date}</span>
+                    ${id}<br><span class="text-gray-400 font-normal mt-1 block">${order.date || ''}</span>
                 </td>
                 <td class="p-4">
-                    <div class="font-bold text-gray-800">${order.customerInfo.name}</div>
-                    <div class="text-sm text-gray-500">${order.customerInfo.phone}</div>
+                    <div class="font-bold text-gray-800">${cInfo.name || 'User'}</div>
+                    <div class="text-sm text-gray-500">${cInfo.phone || ''}</div>
                 </td>
                 <td class="p-4">
-                    <div class="text-sm font-medium text-gray-700">${order.customerInfo.town}, ${order.customerInfo.district}</div>
-                    <div class="text-xs text-gray-400 line-clamp-1" title="${order.customerInfo.address}">${order.customerInfo.address}</div>
+                    <div class="text-sm font-medium text-gray-700">${cInfo.town || ''}, ${cInfo.district || ''}</div>
+                    <div class="text-xs text-gray-400 line-clamp-1" title="${cInfo.address || ''}">${cInfo.address || ''}</div>
                 </td>
                 <td class="p-4">
                     <select onchange="updateOrderStatus('${id}', this.value)" class="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none cursor-pointer shadow-sm hover:border-accent transition">
@@ -948,7 +950,7 @@ function renderAdminOrders() {
                         <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
                     </select>
                 </td>
-                <td class="p-4 font-black text-brand text-right">${formatPrice(order.total)}</td>
+                <td class="p-4 font-black text-brand text-right">${formatPrice(order.total || 0)}</td>
                 <td class="p-4 text-center">
                     <button onclick="viewOrderDetails('${id}')" class="text-accent hover:text-blue-700 hover:scale-110 transition bg-blue-50 w-8 h-8 rounded-full"><i class="fa-solid fa-eye text-sm"></i></button>
                     <button onclick="deleteOrder('${id}')" class="text-red-400 hover:text-red-500 hover:scale-110 transition bg-red-50 w-8 h-8 rounded-full ml-1"><i class="fa-solid fa-trash text-sm"></i></button>
@@ -984,17 +986,20 @@ function deleteOrder(id) {
 function viewOrderDetails(id) {
     db.collection('orders').doc(id).get().then(doc => {
         if (!doc.exists) return;
-        const o = doc.data();
-        let itemsHtml = o.items.map(i => `
+        const o = doc.data() || {};
+        const cInfo = o.customerInfo || {};
+        const itemsList = o.items || [];
+        
+        let itemsHtml = itemsList.map(i => `
             <div class="flex justify-between border-b border-gray-100 py-3 items-center">
                 <div class="flex items-center gap-3">
                     <img src="${i.image || 'https://via.placeholder.com/50'}" class="w-12 h-12 object-cover rounded shadow-sm">
                     <div>
-                        <span class="font-black text-gray-800 block">${i.name}</span>
-                        <span class="bg-blue-50 text-accent text-xs px-2 py-0.5 rounded-full font-bold">Qty: ${i.quantity}</span>
+                        <span class="font-black text-gray-800 block">${i.name || 'Unknown Item'}</span>
+                        <span class="bg-blue-50 text-accent text-xs px-2 py-0.5 rounded-full font-bold">Qty: ${i.quantity || 1}</span>
                     </div>
                 </div>
-                <span class="font-black text-brand text-lg">${formatPriceText(i.price * i.quantity)}</span>
+                <span class="font-black text-brand text-lg">${formatPriceText((i.price || 0) * (i.quantity || 1))}</span>
             </div>
         `).join('');
 
@@ -1008,23 +1013,23 @@ function viewOrderDetails(id) {
                 
                 <h2 class="text-3xl font-black text-gray-900 mb-2 flex items-center gap-3"><i class="fa-solid fa-box-open text-accent"></i> Order Details</h2>
                 <div class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 border-b pb-4 flex justify-between">
-                    <span>ID: <span class="text-brand">${o.id}</span></span>
-                    <span>${o.date}</span>
+                    <span>ID: <span class="text-brand">${o.id || id}</span></span>
+                    <span>${o.date || ''}</span>
                 </div>
                 
                 <div class="overflow-y-auto pr-2 custom-scrollbar flex-1">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100">
                             <h3 class="text-xs font-black text-accent uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fa-solid fa-user"></i> Customer Info</h3>
-                            <p class="font-black text-gray-900 text-lg mb-1">${o.customerInfo.name}</p>
-                            <p class="text-gray-600 font-medium flex items-center gap-2"><i class="fa-solid fa-phone text-gray-400 text-xs"></i> <a href="tel:${o.customerInfo.phone}" class="hover:text-accent">${o.customerInfo.phone}</a></p>
-                            ${o.customerInfo.phoneOpt ? `<p class="text-gray-500 text-sm flex items-center gap-2"><i class="fa-solid fa-phone text-gray-300 text-xs"></i> <a href="tel:${o.customerInfo.phoneOpt}" class="hover:text-accent">${o.customerInfo.phoneOpt}</a></p>` : ''}
+                            <p class="font-black text-gray-900 text-lg mb-1">${cInfo.name || 'Unknown'}</p>
+                            <p class="text-gray-600 font-medium flex items-center gap-2"><i class="fa-solid fa-phone text-gray-400 text-xs"></i> <a href="tel:${cInfo.phone || ''}" class="hover:text-accent">${cInfo.phone || 'N/A'}</a></p>
+                            ${cInfo.phoneOpt ? `<p class="text-gray-500 text-sm flex items-center gap-2"><i class="fa-solid fa-phone text-gray-300 text-xs"></i> <a href="tel:${cInfo.phoneOpt}" class="hover:text-accent">${cInfo.phoneOpt}</a></p>` : ''}
                         </div>
                         <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100">
                             <h3 class="text-xs font-black text-emerald-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fa-solid fa-location-dot"></i> Delivery Address</h3>
-                            <p class="text-gray-800 font-medium leading-tight mb-2">${o.customerInfo.address}</p>
-                            <p class="text-gray-600 text-sm font-bold">${o.customerInfo.town}, ${o.customerInfo.district}</p>
-                            <p class="text-gray-500 text-xs uppercase">${o.customerInfo.country}</p>
+                            <p class="text-gray-800 font-medium leading-tight mb-2">${cInfo.address || 'N/A'}</p>
+                            <p class="text-gray-600 text-sm font-bold">${cInfo.town || ''}, ${cInfo.district || ''}</p>
+                            <p class="text-gray-500 text-xs uppercase">${cInfo.country || ''}</p>
                         </div>
                     </div>
                     
@@ -1099,20 +1104,23 @@ window.trackMyOrder = function (e) {
             `;
             return;
         }
-        const o = doc.data();
-
+        const o = doc.data() || {};
+        const cInfo = o.customerInfo || {};
+        const itemsList = o.items || [];
+        const trackingNo = o.trackingNo || '';
+        
         let statusObj = { text: 'Pending', color: 'orange', icon: 'fa-box', pct: 25 };
         if (o.status === 'Processing') statusObj = { text: 'Processing', color: 'blue', icon: 'fa-gears', pct: 50 };
         if (o.status === 'Shipped') statusObj = { text: 'Shipped', color: 'purple', icon: 'fa-truck-fast', pct: 75 };
         if (o.status === 'Delivered') statusObj = { text: 'Delivered', color: 'emerald', icon: 'fa-house-circle-check', pct: 100 };
         if (o.status === 'Cancelled') statusObj = { text: 'Cancelled', color: 'red', icon: 'fa-ban', pct: 100 };
 
-        const trackingHtml = o.trackingNo ? `
+        const trackingHtml = trackingNo ? `
             <div class="bg-blue-50 border border-blue-100 p-5 rounded-2xl mb-6 shadow-sm">
                 <h4 class="text-xs font-black text-blue-500 uppercase tracking-widest mb-1 items-center flex gap-2"><i class="fa-solid fa-link"></i> Courier Tracking</h4>
-                ${o.trackingNo.startsWith('http') ?
-                `<a href="${o.trackingNo}" target="_blank" class="text-blue-700 font-bold bg-white px-4 py-3 rounded-xl border border-blue-200 block text-center hover:bg-blue-600 hover:text-white transition shadow-md flex items-center justify-center gap-2">Track on Courier Website <i class="fa-solid fa-arrow-up-right-from-square"></i></a>` :
-                `<div class="font-black text-xl text-blue-900 tracking-wider font-mono bg-white px-4 py-2 rounded-xl border border-blue-200 inline-block">${o.trackingNo}</div>`
+                ${trackingNo.startsWith('http') ?
+                `<a href="${trackingNo}" target="_blank" class="text-blue-700 font-bold bg-white px-4 py-3 rounded-xl border border-blue-200 block text-center hover:bg-blue-600 hover:text-white transition shadow-md flex items-center justify-center gap-2">Track on Courier Website <i class="fa-solid fa-arrow-up-right-from-square"></i></a>` :
+                `<div class="font-black text-xl text-blue-900 tracking-wider font-mono bg-white px-4 py-2 rounded-xl border border-blue-200 inline-block">${trackingNo}</div>`
             }
             </div>
         ` : '';
@@ -1123,11 +1131,11 @@ window.trackMyOrder = function (e) {
                 <div class="flex flex-col md:flex-row justify-between md:items-center mb-8 border-b border-gray-100 pb-6 gap-4">
                     <div>
                         <div class="text-xs text-gray-400 font-black uppercase tracking-widest mb-1 flex items-center gap-2"><i class="fa-solid fa-hashtag text-${statusObj.color}-500"></i> Order Confirmed</div>
-                        <div class="font-black text-gray-900 text-2xl tracking-tight">${o.id}</div>
+                        <div class="font-black text-gray-900 text-2xl tracking-tight">${o.id || orderId}</div>
                     </div>
                     <div class="md:text-right">
                         <div class="text-xs text-gray-400 font-black uppercase tracking-widest mb-1"><i class="fa-regular fa-calendar"></i> Order Date</div>
-                        <div class="font-bold text-gray-600 border border-gray-200 bg-gray-50 px-3 py-1 rounded-lg inline-block">${o.date}</div>
+                        <div class="font-bold text-gray-600 border border-gray-200 bg-gray-50 px-3 py-1 rounded-lg inline-block">${o.date || ''}</div>
                     </div>
                 </div>
                 
@@ -1168,12 +1176,12 @@ window.trackMyOrder = function (e) {
                 <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100 shadow-inner">
                     <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-200 pb-2 flex items-center gap-2"><i class="fa-solid fa-receipt"></i> Order Summary</h4>
                     <div class="flex justify-between mb-3 text-gray-700">
-                        <span class="font-bold flex items-center gap-2"><i class="fa-solid fa-user text-gray-400"></i> ${o.customerInfo.name}</span>
-                        <span class="font-bold bg-white px-3 py-1 rounded-lg border border-gray-200 shadow-sm">${o.items.length} Items</span>
+                        <span class="font-bold flex items-center gap-2"><i class="fa-solid fa-user text-gray-400"></i> ${cInfo.name || 'Unknown User'}</span>
+                        <span class="font-bold bg-white px-3 py-1 rounded-lg border border-gray-200 shadow-sm">${itemsList.length} Items</span>
                     </div>
                     <div class="flex justify-between items-end pt-4 border-t border-gray-200 mt-2">
                         <span class="text-xs text-gray-500 font-bold uppercase tracking-widest leading-none">Grand Total Paid</span>
-                        <span class="font-black text-3xl text-brand leading-none">${formatPriceText(o.total)}</span>
+                        <span class="font-black text-3xl text-brand leading-none">${formatPriceText(o.total || 0)}</span>
                     </div>
                 </div>
             </div>
